@@ -2,8 +2,116 @@
     ViewData["Title"] = "Главная";
 }
 
-<h1>Кадровое агентство Кубрик</h1>
+<div class="bg-dark text-white py-5 mb-5 shadow-lg" style="background: linear-gradient(135deg, #1a1a1a 0%, #0d6efd 100%);">
+    <div class="container py-5 text-center">
+        <h1 class="display-4 fw-bold mb-3">Найдите работу своей мечты</h1>
+        <p class="lead mb-4 opacity-75">Соединяем талантливых специалистов с ведущими компаниями города.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a asp-controller="Vacancy" asp-action="Index" class="btn btn-primary btn-lg px-4 shadow-sm">
+                <i class="bi bi-search me-2"></i>Смотреть вакансии
+            </a>
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <a asp-area="Identity" asp-page="/Account/Register" class="btn btn-outline-light btn-lg px-4">
+                    Создать резюме
+                </a>
+            }
+        </div>
+    </div>
+</div>
 
-<p>Добро пожаловать в систему!</p>
+<div class="container">
+    <div class="row g-4 mb-5 text-center">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-up">
+                <div class="card-body py-5">
+                    <div class="feature-icon bg-primary bg-gradient text-white mb-4">
+                        <i class="bi bi-person-workspace"></i>
+                    </div>
+                    <h3 class="fw-bold">Кандидатам</h3>
+                    <p class="text-muted">Создайте резюме, откликайтесь на лучшие вакансии и отслеживайте статус своего найма.</p>
+                    <a asp-controller="Resume" asp-action="Index" class="btn btn-link text-decoration-none">Мои резюме <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-up">
+                <div class="card-body py-5 border-top border-4 border-success">
+                    <div class="feature-icon bg-success bg-gradient text-white mb-4">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <h3 class="fw-bold">Работодателям</h3>
+                    <p class="text-muted">Размещайте вакансии и находите лучших специалистов из нашей базы талантов.</p>
+                    <a asp-controller="TalentPool" asp-action="VerifiedList" class="btn btn-link text-success text-decoration-none">База талантов <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm hover-up">
+                <div class="card-body py-5 border-top border-4 border-warning">
+                    <div class="feature-icon bg-warning bg-gradient text-dark mb-4">
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <h3 class="fw-bold">HR-Агентство</h3>
+                    <p class="text-muted">Инструменты аналитики, управление пользователями и глубокая модерация базы.</p>
+                    @if (User.IsInRole("Admin") || User.IsInRole("Recruiter"))
+                    {
+                        <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-link text-warning text-decoration-none">Панель управления <i class="bi bi-arrow-right"></i></a>
+                    }
+                    else
+                    {
+                        <span class="badge bg-light text-muted">Доступно персоналу</span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 
-<a href="/Vacancy">Перейти к вакансиям</a>
+    <div class="bg-light rounded-4 p-5 mb-5 shadow-sm border">
+        <div class="row text-center g-4">
+            <div class="col-6 col-md-3">
+                <h2 class="fw-bold mb-0">150+</h2>
+                <p class="text-muted small mb-0 text-uppercase">Активных вакансий</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <h2 class="fw-bold mb-0">500+</h2>
+                <p class="text-muted small mb-0 text-uppercase">Резюме в базе</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <h2 class="fw-bold mb-0">85%</h2>
+                <p class="text-muted small mb-0 text-uppercase">Успешных наймов</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <h2 class="fw-bold mb-0">24/7</h2>
+                <p class="text-muted small mb-0 text-uppercase">Поддержка HR</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .feature-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 4rem;
+            height: 4rem;
+            font-size: 2rem;
+            border-radius: 1rem;
+        }
+        
+        .hover-up {
+            transition: all 0.3s ease;
+        }
+        
+            .hover-up:hover {
+                transform: translateY(-10px);
+                box-shadow: 0 1rem 3rem rgba(0,0,0,.1) !important;
+            }
+
+        .btn-link {
+            font-weight: 600;
+        }
+    </style>
+}
