@@ -35,12 +35,15 @@
                         
                         <h6 class="text-muted text-uppercase small fw-bold mt-4">Дата публикации</h6>
                         <p>@Model.CreatedDate.ToString("D")</p>
-
                         <div class="d-grid gap-2 mt-5">
                             <button class="btn btn-primary shadow-sm">Откликнуться на вакансию</button>
+    
                             <div class="d-flex gap-2">
-                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-secondary w-100">Редактировать</a>
-                                <a asp-action="Index" class="btn btn-light border w-100">Назад</a>
+                                @if (User.IsInRole("Employer") || User.IsInRole("Admin"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-secondary w-100">Редактировать</a>
+                                }
+                                <a asp-action="Index" class="btn btn-light border w-100">Назад к списку</a>
                             </div>
                         </div>
                     </div>

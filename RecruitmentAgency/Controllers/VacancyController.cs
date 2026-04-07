@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RecruitmentAgency.Data;
 using RecruitmentAgency.Models;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace RecruitmentAgency.Controllers
 {
@@ -19,70 +21,153 @@ namespace RecruitmentAgency.Controllers
         }
 
         // СПИСОК ВАКАНСИЙ
-        public async Task<IActionResult> Index()
+        [AllowAnonymous]
+        public async Task<IActionResult> Index(string searchString, string schedule, decimal? minSalary)
         {
-            var vacancies = await _context.Vacancies
-                .Include(v => v.Employer)
-                .ToListAsync();
+            var vacanciesQuery = _context.Vacancies.Include(v => v.Employer).AsQueryable();
 
-            return View(vacancies);
-        }
-
-        // СОЗДАНИЕ ВАКАНСИИ
-        [Authorize(Roles = "Employer")]
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-        [HttpPost]
-
-        public async Task<IActionResult> Create(Vacancy vacancy)
-        {
-            if (ModelState.IsValid)
+            if (!string.IsNullOrEmpty(searchString))
             {
-                var user = await _userManager.GetUserAsync(User);
-
-                if (user == null)
-                {
-                    return RedirectToAction("Login");
-                }
-
-                vacancy.EmployerId = user.Id;
-
-                _context.Vacancies.Add(vacancy);
-                await _context.SaveChangesAsync();
-
-                return RedirectToAction(nameof(Index));
+                vacanciesQuery = vacanciesQuery.Where(v => v.Title.Contains(searchString)
+                                                     || v.Description.Contains(searchString));
             }
 
-            return View(vacancy);
+            if (!string.IsNullOrEmpty(schedule))
+            {
+                vacanciesQuery = vacanciesQuery.Where(v => v.Schedule == schedule);
+            }
+
+            if (minSalary.HasValue)
+            {
+                vacanciesQuery = vacanciesQuery.Where(v => v.Salary >= minSalary.Value);
+            }
+
+            ViewData["CurrentSearch"] = searchString;
+            ViewData["CurrentSchedule"] = schedule;
+            ViewData["CurrentMinSalary"] = minSalary;
+
+            ViewBag.Schedules = await _context.Vacancies
+                .Select(v => v.Schedule)
+                .Distinct()
+                .Where(s => s != null)
+                .ToListAsync();
+
+            var result = await vacanciesQuery.OrderByDescending(v => v.CreatedDate).ToListAsync();
+            return View(result);
         }
 
         // ДЕТАЛИ
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
             var vacancy = await _context.Vacancies
                 .Include(v => v.Employer)
                 .FirstOrDefaultAsync(v => v.Id == id);
 
-            if (vacancy == null)
-                return NotFound();
+            if (vacancy == null) return NotFound();
 
             return View(vacancy);
         }
 
+        // СОЗДАНИЕ
+        [Authorize(Roles = "Employer,Admin")]
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Employer,Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Vacancy vacancy)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null) return Challenge();
+
+                vacancy.EmployerId = user.Id;
+                _context.Add(vacancy);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(vacancy);
+        }
+
+        // РЕДАКТИРОВАНИЕ 
+        [Authorize(Roles = "Employer,Admin")]
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var vacancy = await _context.Vacancies.FindAsync(id);
+            if (vacancy == null) return NotFound();
+
+            
+            var userId = _userManager.GetUserId(User);
+            if (!User.IsInRole("Admin") && vacancy.EmployerId != userId)
+            {
+                return Forbid();
+            }
+
+            return View(vacancy);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Employer,Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, Vacancy vacancy)
+        {
+            if (id != vacancy.Id) return NotFound();
+
+            var existingVacancy = await _context.Vacancies
+                .AsNoTracking()
+                .FirstOrDefaultAsync(v => v.Id == id);
+
+            if (existingVacancy == null) return NotFound();
+
+            var userId = _userManager.GetUserId(User);
+            if (!User.IsInRole("Admin") && existingVacancy.EmployerId != userId)
+            {
+                return Forbid();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    vacancy.EmployerId = existingVacancy.EmployerId;
+                    vacancy.CreatedDate = existingVacancy.CreatedDate;
+
+                    _context.Update(vacancy);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!_context.Vacancies.Any(e => e.Id == vacancy.Id)) return NotFound();
+                    else throw;
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(vacancy);
+        }
+
         // УДАЛЕНИЕ
-        [Authorize(Roles = "Employer")]
+        [Authorize(Roles = "Employer,Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var vacancy = await _context.Vacancies.FindAsync(id);
+            if (vacancy == null) return NotFound();
 
-            if (vacancy != null)
+            var userId = _userManager.GetUserId(User);
+
+            if (!User.IsInRole("Admin") && vacancy.EmployerId != userId)
             {
-                _context.Vacancies.Remove(vacancy);
-                await _context.SaveChangesAsync();
+                return Forbid();
             }
+
+            _context.Vacancies.Remove(vacancy);
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
