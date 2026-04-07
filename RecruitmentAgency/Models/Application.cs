@@ -36,6 +36,10 @@ namespace RecruitmentAgency.Models
         [Display(Name = "Новый")] New,
         [Display(Name = "Рассматривается")] UnderReview,
         [Display(Name = "Отказ")] Rejected,
+        [Display(Name = "Отказ работодателем")] RejectedEmployer,
+        [Display(Name = "Отказ рекрутером")] RejectedRecruiter,
+        [Display(Name = "Собеседование")] Interview,
         [Display(Name = "Принят")] Accepted
+
     }
 }

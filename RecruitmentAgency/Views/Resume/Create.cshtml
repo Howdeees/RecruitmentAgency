@@ -18,7 +18,11 @@
                         {
                             <input type="hidden" asp-for="Id" />
                         }
-
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label fw-bold">Полное имя (ФИО)</label>
+                            <input asp-for="FullName" class="form-control" placeholder="Иванов Иван Иванович" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
                         <div class="mb-3">
                             <label asp-for="Title" class="form-label fw-bold">Желаемая должность</label>
                             <input asp-for="Title" class="form-control" placeholder="Напр: Middle .NET Developer" />

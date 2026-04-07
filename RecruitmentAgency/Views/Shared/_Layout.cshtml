@@ -124,6 +124,31 @@
 
     <div class="container">
         <main role="main" class="pb-5">
+            <div class="container">
+                <main role="main" class="pb-3">
+                    @* Блок для вывода ошибок *@
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show shadow border-0 mb-4" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @* Блок для информационных сообщений *@
+                    @if (TempData["Info"] != null)
+                    {
+                        <div class="alert alert-info alert-dismissible fade show shadow border-0 mb-4" role="alert">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            @TempData["Info"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @RenderBody()
+                </main>
+            </div>
             @RenderBody()
         </main>
     </div>

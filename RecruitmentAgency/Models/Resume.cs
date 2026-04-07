@@ -12,6 +12,10 @@ namespace RecruitmentAgency.Models
         [Display(Name = "Желаемая должность")]
         public string Title { get; set; }
 
+        [Required(ErrorMessage = "Введите ваше ФИО")]
+        [Display(Name = "ФИО")]
+        public string FullName { get; set; }
+
         [Required(ErrorMessage = "Укажите ваши навыки")]
         [Display(Name = "Навыки и технологии")]
         public string Skills { get; set; }

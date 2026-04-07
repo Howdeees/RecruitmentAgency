@@ -21,8 +21,8 @@ public class ApplicationController : Controller
         var userId = _userManager.GetUserId(User);
 
         var applications = await _context.Applications
-            .Include(a => a.Vacancy) // Чтобы видеть название вакансии
-            .Include(a => a.Resume)  // Чтобы видеть, какое резюме прикреплено
+            .Include(a => a.Vacancy)
+            .Include(a => a.Resume) 
             .Where(a => a.UserId == userId)
             .OrderByDescending(a => a.AppliedDate)
             .ToListAsync();
@@ -53,10 +53,15 @@ public class ApplicationController : Controller
         return RedirectToAction(nameof(Incoming), new { vacancyId = application.VacancyId });
     }
 
-    // GET: Application/Apply?vacancyId=5
     [HttpGet]
     public async Task<IActionResult> Apply(int vacancyId)
     {
+        if (User.IsInRole("Employer"))
+        {
+            TempData["ErrorMessage"] = "Ошибка доступа: Учетная запись работодателя не может отправлять отклики на вакансии.";
+
+            return RedirectToAction("Details", "Vacancy", new { id = vacancyId });
+        }
         var vacancy = await _context.Vacancies.FindAsync(vacancyId);
         if (vacancy == null) return NotFound();
 
@@ -78,11 +83,11 @@ public class ApplicationController : Controller
         return View(new Application { VacancyId = vacancyId });
     }
 
-    // POST: Application/Apply
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Apply(Application application)
     {
+        if (User.IsInRole("Employer")) return Forbid();
         var userId = _userManager.GetUserId(User);
         if (string.IsNullOrEmpty(userId)) return Challenge();
 

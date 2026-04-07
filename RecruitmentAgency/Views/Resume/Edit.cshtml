@@ -1,0 +1,74 @@
+﻿@model RecruitmentAgency.Models.Resume
+
+@{
+    ViewData["Title"] = "Редактирование резюме";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-warning text-dark p-4">
+                    <h2 class="mb-0 h4"><i class="bi bi-pencil-square me-2"></i>Редактирование резюме</h2>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form asp-action="Edit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        
+                        @* КРИТИЧНО: Скрытое поле ID *@
+                        <input type="hidden" asp-for="Id" />
+                        @* Также скрываем UserId, чтобы он не потерялся при сохранении *@
+                        <input type="hidden" asp-for="UserId" />
+
+                        <div class="mb-4">
+                            <label asp-for="FullName" class="form-label fw-bold">ФИО</label>
+                            <input asp-for="FullName" class="form-control form-control-lg" placeholder="Иванов Иван Иванович" />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Title" class="form-label fw-bold">Желаемая должность</label>
+                            <input asp-for="Title" class="form-control" placeholder="Напр: Middle .NET Developer" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Skills" class="form-label fw-bold">Навыки и технологии</label>
+                            <textarea asp-for="Skills" class="form-control" rows="3" placeholder="C#, ASP.NET Core, Entity Framework, SQL..."></textarea>
+                            <span asp-validation-for="Skills" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Experience" class="form-label fw-bold">Опыт работы</label>
+                            <textarea asp-for="Experience" class="form-control" rows="6" placeholder="Опишите ваши предыдущие места работы и достижения..."></textarea>
+                            <span asp-validation-for="Experience" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Education" class="form-label fw-bold">Образование</label>
+                            <input asp-for="Education" class="form-control" placeholder="ВУЗ, специальность, год окончания" />
+                            <span asp-validation-for="Education" class="text-danger"></span>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                <i class="bi bi-save me-2"></i>Сохранить изменения
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
+                                Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
