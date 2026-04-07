@@ -16,6 +16,42 @@ public class ApplicationController : Controller
         _context = context;
         _userManager = userManager;
     }
+    public async Task<IActionResult> MyApplications()
+    {
+        var userId = _userManager.GetUserId(User);
+
+        var applications = await _context.Applications
+            .Include(a => a.Vacancy) // Чтобы видеть название вакансии
+            .Include(a => a.Resume)  // Чтобы видеть, какое резюме прикреплено
+            .Where(a => a.UserId == userId)
+            .OrderByDescending(a => a.AppliedDate)
+            .ToListAsync();
+
+        return View(applications);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Employer,Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateStatus(int applicationId, ApplicationStatus newStatus)
+    {
+        var application = await _context.Applications
+            .Include(a => a.Vacancy)
+            .FirstOrDefaultAsync(a => a.Id == applicationId);
+
+        if (application == null) return NotFound();
+
+        var userId = _userManager.GetUserId(User);
+        if (application.Vacancy.EmployerId != userId && !User.IsInRole("Admin"))
+        {
+            return Forbid();
+        }
+
+        application.Status = newStatus;
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Incoming), new { vacancyId = application.VacancyId });
+    }
 
     // GET: Application/Apply?vacancyId=5
     [HttpGet]

@@ -89,10 +89,25 @@ namespace RecruitmentAgency.Controllers
             return View(resume);
         }
 
-        public async Task<IActionResult> Details(int id)
+        [Authorize]
+        public async Task<IActionResult> Details(int? id)
         {
-            var resume = await _context.Resumes.Include(r => r.User).FirstOrDefaultAsync(r => r.Id == id);
+            if (id == null) return NotFound();
+
+            var resume = await _context.Resumes
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
             if (resume == null) return NotFound();
+
+            var userId = _userManager.GetUserId(User);
+            bool isOwner = resume.UserId == userId;
+            bool isStaff = User.IsInRole("Employer") || User.IsInRole("Admin") || User.IsInRole("Recruiter");
+
+            if (!isOwner && !isStaff)
+            {
+                return Forbid();
+            }
 
             return View(resume);
         }

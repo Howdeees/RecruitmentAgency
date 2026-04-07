@@ -74,32 +74,43 @@
                 </button>
 
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1 ms-4">
+                    <ul class="navbar-nav flex-grow-1">
+                        @* Общие ссылки для всех *@
                         <li class="nav-item">
-                            <a class="nav-link text-white d-flex align-items-center" asp-controller="Vacancy" asp-action="Index">
-                                <i class="bi bi-briefcase me-1"></i> Вакансии
-                            </a>
+                            <a class="nav-link text-white" asp-controller="Vacancy" asp-action="Index">Вакансии</a>
                         </li>
-                        @if (!User.IsInRole("Employer")) 
+
+                        @if (User.Identity.IsAuthenticated)
                         {
-                        <li class="nav-item">
-                            <a class="nav-link text-white d-flex align-items-center" asp-controller="Resume" asp-action="Index">
-                                <i class="bi bi-file-earmark-person me-1"></i> Резюме
-                            </a>
-                        </li>
-                        }
-                        @if (User.IsInRole("Employer") || User.IsInRole("Admin"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-white" asp-controller="Application" asp-action="Incoming">
-                                    <i class="bi bi-person-badge me-1"></i> Отклики
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-white" asp-controller="Vacancy" asp-action="MyVacancies">
-                                    <i class="bi bi-kanban me-1"></i> Мои вакансии
-                                </a>
-                            </li>
+                            @* Ссылка ТОЛЬКО для соискателей (обычных юзеров) *@
+                            if (!User.IsInRole("Employer") && !User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Application" asp-action="MyApplications">
+                                        <i class="bi bi-send-check me-1"></i> Мои отклики
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Resume" asp-action="Index">
+                                        <i class="bi bi-file-person me-1"></i> Мои резюме
+                                    </a>
+                                </li>
+                            }
+
+                            @* Ссылки для Работодателя и Админа и Рекрутера *@
+                            if (User.IsInRole("Employer") || User.IsInRole("Admin") || User.IsInRole("Recruiter"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Vacancy" asp-action="MyVacancies">
+                                        <i class="bi bi-kanban me-1"></i> Мои вакансии
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Application" asp-action="Incoming">
+                                        <i class="bi bi-people me-1"></i> Входящие отклики
+                                    </a>
+                                </li>
+                            }
                         }
                     </ul>
                     
