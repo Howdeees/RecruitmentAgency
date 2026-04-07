@@ -1,54 +1,96 @@
 ﻿@model IEnumerable<RecruitmentAgency.Models.Vacancy>
 
+@{
+    ViewData["Title"] = "Мои вакансии";
+}
+
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="display-6 fw-bold">Мои вакансии</h1>
-        <a asp-action="Create" class="btn btn-success shadow-sm">
-            <i class="bi bi-plus-circle me-1"></i> Разместить новую
+        <div>
+            <h2 class="fw-bold mb-0">Управление вакансиями</h2>
+            <p class="text-muted">Список опубликованных вами предложений</p>
+        </div>
+        <a asp-action="Create" class="btn btn-success rounded-pill px-4 shadow-sm">
+            <i class="bi bi-plus-lg me-1"></i> Добавить новую
         </a>
     </div>
 
-    <div class="row g-3">
-        @foreach (var item in Model)
-        {
-            <div class="col-12">
-                <div class="card shadow-sm border-0 border-start border-4 border-primary">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="mb-1 fw-bold">@item.Title</h5>
-                            <span class="text-muted small">
-                                <i class="bi bi-calendar-event me-1"></i> Создана: @item.CreatedDate.ToString("dd.MM.yyyy")
-                            </span>
-                            <span class="badge bg-light text-dark border ms-2">@item.Schedule</span>
-                        </div>
-                        
-                        <div class="d-flex gap-3 align-items-center">
+    @if (!Model.Any())
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center">
+            <i class="bi bi-folder2-open display-1 text-light"></i>
+            <h4 class="text-muted mt-3">У вас пока нет активных вакансий</h4>
+            <a asp-action="Create" class="btn btn-primary mt-3 rounded-pill">Создать первую вакансию</a>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 g-3">
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden hover-lift transition-all">
+                        <div class="row g-0 align-items-center">
+                            <div class="col-md-9 p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h5 class="fw-bold mb-1">@item.Title</h5>
+                                        <span class="badge bg-light text-primary border rounded-pill fw-normal">
+                                            @item.Schedule
+                                        </span>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="text-success fw-bold">@item.Salary.ToString("N0") ₽</div>
+                                        <small class="text-muted">@item.CreatedDate.ToString("dd.MM.yyyy")</small>
+                                    </div>
+                                </div>
+                                
+                                <p class="text-muted small mb-3 line-clamp-2">@item.Description</p>
 
-                            <a asp-controller="Application" asp-action="Incoming" asp-route-vacancyId="@item.Id"
-                                   class="text-decoration-none text-center me-4">
-                                <div class="h4 mb-0 text-primary">@item.Applications?.Count()</div>
-                                <div class="small text-muted">откликов</div>
-                            </a>
+                                <div class="d-flex gap-2">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3">Просмотр</a>
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-dark rounded-pill px-3">Изменить</a>
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger rounded-pill px-3">Удалить</a>
+                                    
+                                    <span class="ms-auto text-muted small mt-1">
+                                        <i class="bi bi-eye me-1"></i> @item.ViewsCount
+                                    </span>
+                                </div>
+                            </div>
 
-                            <div class="btn-group">
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary btn-sm">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <form asp-action="Delete" asp-route-id="@item.Id" method="post"
-                                      onsubmit="return confirm('Вы уверены, что хотите удалить эту вакансию и все отклики на неё?');"
-                                      class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-trash me-1"></i> Удалить
-                                    </button>
-                                </form>
+                            <div class="col-md-3 bg-light d-flex align-items-center justify-content-center p-3 border-start" style="min-height: 120px;">
+                                @if (!string.IsNullOrEmpty(item.ImagePath))
+                                {
+                                    <img src="/uploads/vacancies/@item.ImagePath" 
+                                         class="img-fluid" 
+                                         style="max-height: 80px; object-fit: contain;" 
+                                         alt="Logo" />
+                                }
+                                else
+                                {
+                                    <i class="bi bi-building text-secondary opacity-25 display-6"></i>
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        }
-    </div>
+            }
+        </div>
+    }
 </div>
+
+@section Scripts {
+    <style>
+        .hover-lift:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.08) !important;
+        }
+        .transition-all { transition: all 0.2s ease-in-out; }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+}

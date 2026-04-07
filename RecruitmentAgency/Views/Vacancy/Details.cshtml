@@ -4,56 +4,137 @@
     ViewData["Title"] = Model.Title;
 }
 
-<div class="container mt-4">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a asp-action="Index">Все вакансии</a></li>
-            <li class="breadcrumb-item active">@Model.Title</li>
-        </ol>
-    </nav>
-
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white py-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2 class="mb-0 text-primary">@Model.Title</h2>
-                <span class="badge bg-success fs-5">@Model.Salary.ToString("N0") руб.</span>
+<div class="container mt-5 pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="mb-4">
+                <a asp-action="Index" class="text-decoration-none text-muted">
+                    <i class="bi bi-arrow-left me-1"></i> Назад к списку вакансий
+                </a>
             </div>
-        </div>
-        <div class="card-body p-4">
-            <div class="row">
-                <div class="col-md-8">
-                    <h5 class="fw-bold"><i class="bi bi-info-circle me-2"></i>Описание работы</h5>
-                    <p class="text-secondary" style="white-space: pre-line;">@Model.Description</p>
 
-                    <h5 class="fw-bold mt-4"><i class="bi bi-list-check me-2"></i>Требования</h5>
-                    <p class="text-secondary" style="white-space: pre-line;">@Model.Requirements</p>
-                </div>
-                <div class="col-md-4 border-start">
-                    <div class="ps-md-3">
-                        <h6 class="text-muted text-uppercase small fw-bold">Условия</h6>
-                        <p><strong>График:</strong> @Model.Schedule</p>
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-white border-0 p-4 p-md-5">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 me-3">
+                                    <i class="bi bi-check-circle me-1"></i> Активная вакансия
+                                </span>
+                                <span class="text-muted small">
+                                    <i class="bi bi-calendar3 me-1"></i> Опубликовано: @Model.CreatedDate.ToString("dd MMMM yyyy")
+                                </span>
+                            </div>
+                            
+                            <h1 class="fw-bold display-6 mb-2">@Model.Title</h1>
+                            <h4 class="text-primary fw-semibold mb-4">@Model.Salary.ToString("N0") ₽</h4>
+                            
+                            <div class="d-flex flex-wrap gap-3">
+                                <div class="bg-light px-3 py-2 rounded-3 border">
+                                    <i class="bi bi-briefcase me-2 text-secondary"></i><strong>Компания:</strong> @Model.CompanyName
+                                </div>
+                                <div class="bg-light px-3 py-2 rounded-3 border">
+                                    <i class="bi bi-clock me-2 text-secondary"></i><strong>График:</strong> @Model.Schedule
+                                </div>
+                            </div>
+                        </div>
                         
-                        <h6 class="text-muted text-uppercase small fw-bold mt-4">Дата публикации</h6>
-                        <p>@Model.CreatedDate.ToString("D")</p>
-                        <div class="d-grid gap-2 mt-5">
-                            <a asp-controller="Application"
-                                   asp-action="Apply"
-                                   asp-route-vacancyId="@Model.Id"
-                                   class="btn btn-primary btn-lg shadow-sm">
-                                <i class="bi bi-send-plus me-2"></i> Откликнуться на вакансию
-                            </a>
-    
-                            <div class="d-flex gap-2">
-                                @if (User.IsInRole("Employer") || User.IsInRole("Admin"))
+                        <div class="col-md-4 text-center mt-4 mt-md-0">
+                            <div class="bg-white rounded-4 shadow-sm border d-inline-flex align-items-center justify-content-center p-3" 
+                                 style="width: 180px; height: 180px; overflow: hidden;">
+                                @if (!string.IsNullOrEmpty(Model.ImagePath))
                                 {
-                                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-secondary w-100">Редактировать</a>
+                                    <img src="/uploads/vacancies/@Model.ImagePath" alt="@Model.CompanyName" class="img-fluid" style="max-height: 100%; object-fit: contain;" />
                                 }
-                                <a asp-action="Index" class="btn btn-light border w-100">Назад к списку</a>
+                                else
+                                {
+                                    <i class="bi bi-building text-light display-1"></i>
+                                }
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5 pt-0">
+                    <hr class="my-4 opacity-25">
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <section class="mb-5">
+                                <h5 class="fw-bold mb-3"><i class="bi bi-info-circle me-2 text-primary"></i>Описание вакансии</h5>
+                                <div style="white-space: pre-line; line-height: 1.7; color: #444;">
+                                    @Model.Description
+                                </div>
+                            </section>
+
+                            @if (!string.IsNullOrEmpty(Model.Requirements))
+                            {
+                                <section class="mb-5">
+                                    <h5 class="fw-bold mb-3"><i class="bi bi-list-check me-2 text-primary"></i>Требования к кандидату</h5>
+                                    <div class="bg-light p-4 rounded-4 border-start border-primary border-4" style="white-space: pre-line; line-height: 1.7;">
+                                        @Model.Requirements
+                                    </div>
+                                </section>
+                            }
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="sticky-top" style="top: 20px;">
+                                <div class="card border-0 bg-dark text-white rounded-4 p-4 shadow">
+                                    <h5 class="mb-3">Откликнуться</h5>
+                                    <p class="small opacity-75">Ваше резюме будет отправлено работодателю напрямую.</p>
+                                    
+                                    @if (User.Identity.IsAuthenticated)
+                                    {
+                                        <button class="btn btn-success w-100 py-3 fw-bold mb-3 rounded-3 shadow-sm">
+                                            Отправить резюме
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-light w-100 py-2 rounded-3">
+                                            Войдите, чтобы откликнуться
+                                        </a>
+                                    }
+                                    
+                                    <div class="text-center mt-3 small opacity-50">
+                                        <i class="bi bi-eye me-1"></i> Просмотров: @Model.ViewsCount
+                                    </div>
+                                </div>
+
+                                @* Кнопки управления для автора или админа *@
+                                @if (User.IsInRole("Admin") || (User.Identity.IsAuthenticated && Model.EmployerId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value))
+                                {
+                                    <div class="mt-3 d-grid gap-2">
+                                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-dark">
+                                            <i class="bi bi-pencil me-1"></i> Редактировать
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-light border-0 py-3 text-center">
+                    <p class="mb-0 text-muted small">ID вакансии: #@Model.Id | Recruitment Agency 2026</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    .card {
+        transition: transform 0.2s;
+    }
+    h1 {
+        color: #212529;
+    }
+    section div {
+        font-size: 1.05rem;
+    }
+</style>

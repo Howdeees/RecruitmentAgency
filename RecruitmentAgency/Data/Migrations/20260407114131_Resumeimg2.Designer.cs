@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RecruitmentAgency.Data;
 
@@ -11,9 +12,11 @@ using RecruitmentAgency.Data;
 namespace RecruitmentAgency.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260407114131_Resumeimg2")]
+    partial class Resumeimg2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -334,6 +337,7 @@ namespace RecruitmentAgency.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("EmployerId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ImagePath")
@@ -458,7 +462,8 @@ namespace RecruitmentAgency.Data.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Employer")
                         .WithMany()
                         .HasForeignKey("EmployerId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Employer");
                 });

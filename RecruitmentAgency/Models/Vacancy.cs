@@ -9,6 +9,7 @@ namespace RecruitmentAgency.Models
         public int Id { get; set; }
 
         public string Title { get; set; }
+        public string CompanyName { get; set; }
         public string Description { get; set; }
         public string Requirements { get; set; }
 
@@ -17,8 +18,11 @@ namespace RecruitmentAgency.Models
         public decimal Salary { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
-
-        public string EmployerId { get; set; }
+        
+        public string? EmployerId { get; set; }
+        public string? ImagePath { get; set; }
+        public int ViewsCount { get; set; } = 0;
+        [ValidateNever]
         public IdentityUser Employer { get; set; }
         public virtual ICollection<Application> Applications { get; set; } = new List<Application>();
     }

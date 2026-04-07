@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\uploads\avatars\" />
+    <Folder Include="wwwroot\uploads\vacancies\" />
   </ItemGroup>
 
 </Project>
