@@ -1,0 +1,71 @@
+﻿@model RecruitmentAgency.Models.Resume
+
+@{
+    ViewData["Title"] = "Просмотр резюме";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                @* Шапка резюме *@
+                <div class="card-header bg-dark text-white p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">@Model.FullName</h2>
+                            <p class="mb-0 opacity-75">
+                                <i class="bi bi-briefcase me-2"></i>@Model.Title
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <p class="small mb-1"><i class="bi bi-envelope me-1"></i> @Model.User.Email</p>
+                            <span class="badge bg-primary">Обновлено: @Model.UpdatedDate.ToString("dd.MM.yyyy")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    @* Навыки *@
+                    <div class="mb-5">
+                        <h4 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="bi bi-tools me-2"></i>Ключевые навыки
+                        </h4>
+                        <p class="lead" style="white-space: pre-line;">@Model.Skills</p>
+                    </div>
+
+                    @* Опыт работы *@
+                    <div class="mb-5">
+                        <h4 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="bi bi-briefcase me-2"></i>Опыт работы
+                        </h4>
+                        <div class="p-3 bg-light rounded-3" style="white-space: pre-line;">
+                            @Model.Experience
+                        </div>
+                    </div>
+
+                    @* Образование *@
+                    <div class="mb-4">
+                        <h4 class="text-primary border-bottom pb-2 mb-3">
+                            <i class="bi bi-mortarboard me-2"></i>Образование
+                        </h4>
+                        <p>@Model.Education</p>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light p-4 border-0">
+                    <div class="d-flex gap-2">
+                        @if (Model.UserId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning px-4">
+                                <i class="bi bi-pencil me-1"></i> Редактировать
+                            </a>
+                        }
+                        <button onclick="window.history.back()" class="btn btn-outline-secondary px-4">
+                            Назад
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

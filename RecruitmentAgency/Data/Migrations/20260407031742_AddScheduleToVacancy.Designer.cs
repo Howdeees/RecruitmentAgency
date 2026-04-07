@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RecruitmentAgency.Data;
 
@@ -11,9 +12,11 @@ using RecruitmentAgency.Data;
 namespace RecruitmentAgency.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260407031742_AddScheduleToVacancy")]
+    partial class AddScheduleToVacancy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -232,22 +235,19 @@ namespace RecruitmentAgency.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("AppliedDate")
+                    b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CoverLetter")
+                    b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ResumeId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
+                    b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("VacancyId")
                         .HasColumnType("int");
@@ -255,8 +255,6 @@ namespace RecruitmentAgency.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ResumeId");
-
-                    b.HasIndex("UserId");
 
                     b.HasIndex("VacancyId");
 
@@ -326,6 +324,9 @@ namespace RecruitmentAgency.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("DesiredSalary")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Education")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -341,13 +342,6 @@ namespace RecruitmentAgency.Data.Migrations
                     b.Property<string>("Skills")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -455,26 +449,18 @@ namespace RecruitmentAgency.Data.Migrations
             modelBuilder.Entity("RecruitmentAgency.Models.Application", b =>
                 {
                     b.HasOne("RecruitmentAgency.Models.Resume", "Resume")
-                        .WithMany("Applications")
+                        .WithMany()
                         .HasForeignKey("ResumeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("RecruitmentAgency.Models.Vacancy", "Vacancy")
-                        .WithMany("Applications")
+                        .WithMany()
                         .HasForeignKey("VacancyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Resume");
-
-                    b.Navigation("User");
 
                     b.Navigation("Vacancy");
                 });
@@ -521,16 +507,6 @@ namespace RecruitmentAgency.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Employer");
-                });
-
-            modelBuilder.Entity("RecruitmentAgency.Models.Resume", b =>
-                {
-                    b.Navigation("Applications");
-                });
-
-            modelBuilder.Entity("RecruitmentAgency.Models.Vacancy", b =>
-                {
-                    b.Navigation("Applications");
                 });
 #pragma warning restore 612, 618
         }

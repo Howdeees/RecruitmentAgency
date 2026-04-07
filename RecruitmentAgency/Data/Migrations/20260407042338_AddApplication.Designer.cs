@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RecruitmentAgency.Data;
 
@@ -11,9 +12,11 @@ using RecruitmentAgency.Data;
 namespace RecruitmentAgency.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260407042338_AddApplication")]
+    partial class AddApplication
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -326,6 +329,9 @@ namespace RecruitmentAgency.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<decimal>("DesiredSalary")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Education")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -341,13 +347,6 @@ namespace RecruitmentAgency.Data.Migrations
                     b.Property<string>("Skills")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("UpdatedDate")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -455,7 +454,7 @@ namespace RecruitmentAgency.Data.Migrations
             modelBuilder.Entity("RecruitmentAgency.Models.Application", b =>
                 {
                     b.HasOne("RecruitmentAgency.Models.Resume", "Resume")
-                        .WithMany("Applications")
+                        .WithMany()
                         .HasForeignKey("ResumeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -467,7 +466,7 @@ namespace RecruitmentAgency.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("RecruitmentAgency.Models.Vacancy", "Vacancy")
-                        .WithMany("Applications")
+                        .WithMany()
                         .HasForeignKey("VacancyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -521,16 +520,6 @@ namespace RecruitmentAgency.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Employer");
-                });
-
-            modelBuilder.Entity("RecruitmentAgency.Models.Resume", b =>
-                {
-                    b.Navigation("Applications");
-                });
-
-            modelBuilder.Entity("RecruitmentAgency.Models.Vacancy", b =>
-                {
-                    b.Navigation("Applications");
                 });
 #pragma warning restore 612, 618
         }

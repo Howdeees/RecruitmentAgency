@@ -1,15 +1,45 @@
-﻿public class Application
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
+
+namespace RecruitmentAgency.Models
 {
-    public int Id { get; set; }
+    public class Application
+    {
+        public int Id { get; set; }
 
-    public int ResumeId { get; set; }
-    public Resume Resume { get; set; }
+        public int VacancyId { get; set; }
+        [ValidateNever]
+        public Vacancy Vacancy { get; set; }
+        [ValidateNever]
+        public string UserId { get; set; }
+        [ValidateNever]
+        public IdentityUser User { get; set; }
 
-    public int VacancyId { get; set; }
-    public Vacancy Vacancy { get; set; }
+        [Display(Name = "Выберите резюме")]
+        [Required(ErrorMessage = "Необходимо выбрать резюме для отклика")]
+        public int ResumeId { get; set; }
+        [ValidateNever]
+        public Resume Resume { get; set; }
 
-    public string Message { get; set; }
-    public string Status { get; set; } = "New";
+        [Required(ErrorMessage = "Напишите сопроводительное письмо")]
+        [Display(Name = "Сопроводительное письмо")]
+        public string CoverLetter { get; set; }
 
-    public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime AppliedDate { get; set; } = DateTime.Now;
+
+        public ApplicationStatus Status { get; set; } = ApplicationStatus.New;
+    }
+
+    public enum ApplicationStatus
+    {
+        [Display(Name = "Новый")] New,
+        [Display(Name = "Рассматривается")] UnderReview,
+        [Display(Name = "Отказ")] Rejected,
+        [Display(Name = "Отказ работодателем")] RejectedEmployer,
+        [Display(Name = "Отказ рекрутером")] RejectedRecruiter,
+        [Display(Name = "Собеседование")] Interview,
+        [Display(Name = "Принят")] Accepted
+
+    }
 }

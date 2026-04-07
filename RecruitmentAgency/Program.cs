@@ -3,25 +3,38 @@ using Microsoft.EntityFrameworkCore;
 using RecruitmentAgency.Data;
 
 var builder = WebApplication.CreateBuilder(args);
-// Подключение к БД
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=RecruitmentAgencyDB;Trusted_Connection=True;MultipleActiveResultSets=true"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? "Server=(localdb)\\mssqllocaldb;Database=RecruitmentAgencyDB;Trusted_Connection=True;MultipleActiveResultSets=true"));
 
-// Identity
-builder.Services.AddDefaultIdentity<IdentityUser>(options => 
-    options.SignIn.RequireConfirmedAccount = false)
-    .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<ApplicationDbContext>();
 
-// MVC
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Identity/Account/Login";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+    options.LogoutPath = "/Identity/Account/Logout";
+});
+
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Middleware
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
@@ -30,13 +43,34 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
-app.UseAuthorization();
+app.UseAuthorization(); 
 
-// Роутинг
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-
 app.MapRazorPages();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+    string[] roleNames = { "Admin", "Employer", "Recruiter" };
+    foreach (var roleName in roleNames)
+    {
+        if (!await roleManager.RoleExistsAsync(roleName))
+        {
+            await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+
+    string recruiterEmail = "david.aloyan.00@mail.ru";
+    var recruiterUser = await userManager.FindByEmailAsync(recruiterEmail);
+    if (recruiterUser != null && !await userManager.IsInRoleAsync(recruiterUser, "Recruiter"))
+    {
+        await userManager.AddToRoleAsync(recruiterUser, "Recruiter");
+    }
+}
 
 app.Run();

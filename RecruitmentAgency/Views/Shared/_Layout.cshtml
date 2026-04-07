@@ -1,51 +1,176 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - RecruitmentAgency</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - Кубрик HR</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/RecruitmentAgency.styles.css" asp-append-version="true" />
+
+    <style>
+            body {
+                font-family: 'Inter', sans-serif;
+                background-color: #f8f9fa;
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+
+            .navbar-custom {
+                background-color: rgba(33, 37, 41, 0.95) !important;
+                backdrop-filter: blur(10px);
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+
+            .nav-link {
+                transition: all 0.2s ease;
+                font-weight: 500;
+                opacity: 0.8;
+            }
+
+                .nav-link:hover {
+                    opacity: 1;
+                    color: #0d6efd !important;
+                    transform: translateY(-1px);
+                }
+
+            .navbar-brand {
+                letter-spacing: -0.5px;
+                font-size: 1.4rem;
+            }
+
+            main {
+                flex: 1;
+            }
+
+            footer {
+                background: white;
+                border-top: 1px solid #dee2e6;
+            }
+        
+            #login-partial .nav-link {
+                padding: 0.5rem 1rem;
+            }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">RecruitmentAgency</a>
+        <nav class="navbar navbar-expand-sm navbar-dark navbar-custom shadow-sm mb-4 py-3">
+            <div class="container">
+                <a class="navbar-brand fw-bold d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-box-seam-fill me-2 text-primary"></i>
+                    <span>Кубрик<span class="text-primary">HR</span></span>
+                </a>
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
+                        @* Общие ссылки для всех *@
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-white" asp-controller="Vacancy" asp-action="Index">Вакансии</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            @* Ссылка ТОЛЬКО для соискателей (обычных юзеров) *@
+                            if (!User.IsInRole("Employer") && !User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Application" asp-action="MyApplications">
+                                        <i class="bi bi-send-check me-1"></i> Мои отклики
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Resume" asp-action="Index">
+                                        <i class="bi bi-file-person me-1"></i> Мои резюме
+                                    </a>
+                                </li>
+                            }
+
+                            @* Ссылки для Работодателя и Админа и Рекрутера *@
+                            if (User.IsInRole("Employer") || User.IsInRole("Admin") || User.IsInRole("Recruiter"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Vacancy" asp-action="MyVacancies">
+                                        <i class="bi bi-kanban me-1"></i> Мои вакансии
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Application" asp-action="Incoming">
+                                        <i class="bi bi-people me-1"></i> Входящие отклики
+                                    </a>
+                                </li>
+                            }
+                        }
                     </ul>
-                    <partial name="_LoginPartial" />
+                    
+                    <div class="d-flex align-items-center" id="login-partial">
+                        <partial name="_LoginPartial" />
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
+
     <div class="container">
-        <main role="main" class="pb-3">
+        <main role="main" class="pb-5">
+            <div class="container">
+                <main role="main" class="pb-3">
+                    @* Блок для вывода ошибок *@
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show shadow border-0 mb-4" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @* Блок для информационных сообщений *@
+                    @if (TempData["Info"] != null)
+                    {
+                        <div class="alert alert-info alert-dismissible fade show shadow border-0 mb-4" role="alert">
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                            @TempData["Info"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @RenderBody()
+                </main>
+            </div>
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - RecruitmentAgency - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="text-muted mt-auto shadow-sm">
+        <div class="container py-4">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <span class="fw-bold text-dark">Кубрик HR</span> &copy; 2026 — Профессиональный подбор персонала
+                </div>
+                <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
+                    <a href="#" class="text-muted me-3 text-decoration-none small">Политика конфиденциальности</a>
+                    <a href="#" class="text-muted text-decoration-none small">Поддержка</a>
+                </div>
+            </div>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

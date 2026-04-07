@@ -1,57 +1,32 @@
-﻿@model Vacancy
+﻿@model RecruitmentAgency.Models.Vacancy
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Удаление вакансии";
 }
 
-<h1>Delete</h1>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <div class="card border-danger shadow-sm">
+                <div class="card-body p-5">
+                    <div class="text-danger mb-4">
+                        <i class="bi bi-exclamation-triangle-fill" style="font-size: 3rem;"></i>
+                    </div>
+                    <h3 class="mb-3">Удалить вакансию?</h3>
+                    <p class="text-muted mb-4">
+                        Вы собираетесь безвозвратно удалить вакансию <strong>"@Model.Title"</strong>.
+                        Это действие нельзя будет отменить.
+                    </p>
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Vacancy</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Requirements)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Requirements)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Salary)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Salary)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Employer)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Employer.Id)
-        </dd>
-    </dl>
-    
-    <form asp-action="Delete">
-        <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
-    </form>
+                    <form asp-action="Delete">
+                        <input type="hidden" asp-for="Id" />
+                        <div class="d-flex justify-content-center gap-3">
+                            <a asp-action="Index" class="btn btn-light border px-4">Отмена</a>
+                            <button type="submit" class="btn btn-danger px-4 shadow-sm">Да, удалить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
