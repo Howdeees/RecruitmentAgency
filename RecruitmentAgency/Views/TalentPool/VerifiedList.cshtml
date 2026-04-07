@@ -34,10 +34,22 @@
                             </a>
                         </div>
 
-                        <div class="mb-3">
-                            <small class="text-muted d-block">Изначальный отклик на:</small>
-                            <span class="fw-medium">@item.Vacancy.Title</span>
-                        </div>
+                            <div class="mb-3">
+                                <small class="text-muted d-block fst-italic">Подходящая вакансия::</small>
+                                @if (item.Vacancy != null)
+                                {
+                                    <a asp-controller="Vacancy" 
+                                       asp-action="Details" 
+                                       asp-route-id="@item.VacancyId" 
+                                       class="fw-medium text-dark text-decoration-underline-hover">
+                                        @item.Vacancy.Title
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Информации о вакансии нет</span>
+                                }
+                            </div>
 
                         @if (!string.IsNullOrEmpty(item.RecruiterNotes))
                         {
