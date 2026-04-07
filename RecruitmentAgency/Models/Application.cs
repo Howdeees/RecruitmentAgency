@@ -40,7 +40,8 @@ namespace RecruitmentAgency.Models
         [Display(Name = "Отказ работодателем")] RejectedEmployer,
         [Display(Name = "Отказ рекрутером")] RejectedRecruiter,
         [Display(Name = "Собеседование")] Interview,
-        [Display(Name = "Принят")] Accepted
+        [Display(Name = "Принят")] Accepted,
+        [Display(Name = "Рекомендован")] Recommended
 
     }
 }

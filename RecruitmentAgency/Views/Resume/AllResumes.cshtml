@@ -1,14 +1,25 @@
 ﻿@model IEnumerable<RecruitmentAgency.Models.Resume>
 
+@{
+    ViewData["Title"] = "Все резюме";
+}
+
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="display-6 fw-bold">Резюме кандидатов</h1>
+        <div>
+            <h2 class="fw-bold mb-0 text-primary"><i class="bi bi-person-badge-fill me-2"></i>База резюме</h2>
+            <p class="text-muted small">Общий список кандидатов системы</p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-primary shadow-sm px-3 py-2">Всего: @Model.Count()</span>
+        </div>
     </div>
 
     @if (!Model.Any())
     {
         <div class="alert alert-light border shadow-sm text-center py-5">
-            <p class="text-muted mb-0">У вас пока нет созданных резюме.</p>
+            <i class="bi bi-search fs-1 text-muted d-block mb-3"></i>
+            <p class="text-muted mb-0">Резюме пока не найдены.</p>
         </div>
     }
     else
@@ -16,25 +27,87 @@
         <div class="row g-3">
             @foreach (var item in Model)
             {
-                <div class="col-md-6">
-                    <div class="card h-100 shadow-sm border-0">
+                // Проверяем, есть ли уже рекомендация (нужен .Include(r => r.Applications) в контроллере)
+                bool isAlreadyRecommended = item.Applications?.Any(a => a.Status == RecruitmentAgency.Models.ApplicationStatus.Recommended) ?? false;
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm border-0 @(isAlreadyRecommended ? "border-start border-4 border-warning" : "")">
                         <div class="card-body">
-                            <h5 class="fw-bold text-primary">@item.Title</h5>
-                            <p class="text-muted small mb-3">Обновлено: @item.UpdatedDate.ToString("dd.MM.yyyy")</p>
-                            <div class="mb-3">
-                                <span class="badge bg-light text-dark border">Навыки: @(item.Skills.Length > 50 ? item.Skills.Substring(0, 50) + "..." : item.Skills)</span>
-                            </div>
-                        </div>
-                        <div class="card-footer bg-white border-0 pb-3">
-                            <div class="d-flex gap-2">
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary btn-sm">Редактировать</a>
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">Просмотр</a>
-                                <form asp-action="Delete" asp-route-id="@item.Id" method="post"
-                                      onsubmit="return confirm('Вы уверены, что хотите навсегда удалить это резюме?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-trash me-1"></i> Удалить
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                @* Используем FullName, если оно есть в модели, иначе Title *@
+                                <h5 class="fw-bold text-dark mb-0">@(string.IsNullOrEmpty(item.FullName) ? "Кандидат" : item.FullName)</h5>
+                                
+                                @if (User.IsInRole("Admin") || User.IsInRole("Recruiter"))
+                                {
+                                    <button class="btn btn-sm @(isAlreadyRecommended ? "btn-warning" : "btn-outline-warning") border-0" 
+                                            type="button" 
+                                            data-bs-toggle="collapse" 
+                                            data-bs-target="#recommend-@item.Id">
+                                        <i class="bi @(isAlreadyRecommended ? "bi-star-fill" : "bi-star")"></i>
                                     </button>
-                                </form>
+                                }
+                            </div>
+
+                            @* Заменяем DesiredPosition на Title из вашей модели *@
+                            <p class="text-primary fw-medium small mb-2">@item.Title</p>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted d-block mb-1">Навыки:</small>
+                                <span class="badge bg-light text-dark border fw-normal text-wrap text-start w-100">
+                                    @if (!string.IsNullOrEmpty(item.Skills))
+                                    {
+                                        @(item.Skills.Length > 80 ? item.Skills.Substring(0, 80) + "..." : item.Skills)
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted italic">Не указаны</span>
+                                    }
+                                </span>
+                            </div>
+
+                            @if (User.IsInRole("Admin") || User.IsInRole("Recruiter"))
+                            {
+                                <div class="collapse mt-2" id="recommend-@item.Id">
+                                    <form asp-action="AddToTalentPool" method="post" class="p-2 border rounded bg-light shadow-sm">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="resumeId" value="@item.Id" />
+                                        <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                        
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" name="comment" class="form-control" 
+                                                   placeholder="Почему рекомендуете?" required 
+                                                   value="@(item.Applications?.FirstOrDefault(a => a.Status == RecruitmentAgency.Models.ApplicationStatus.Recommended)?.RecruiterNotes)">
+                                            <button class="btn btn-warning" type="submit">
+                                                <i class="bi bi-check-lg"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="card-footer bg-white border-0 pb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex gap-1">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    
+                                    @* Проверка: автор резюме ИЛИ админ *@
+                                    @if (User.Identity.Name == item.User?.Email || User.IsInRole("Admin"))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@item.Id" method="post" class="d-inline"
+                                              onsubmit="return confirm('Удалить резюме навсегда?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                                <small class="text-muted" style="font-size: 0.75rem;">@item.UpdatedDate.ToString("dd.MM.yyyy")</small>
                             </div>
                         </div>
                     </div>
@@ -43,3 +116,11 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <style>
+        .card { transition: transform 0.2s ease; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 4px 15px rgba(0,0,0,0.1)!important; }
+        .badge { white-space: normal; }
+    </style>
+}

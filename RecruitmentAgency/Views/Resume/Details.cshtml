@@ -51,15 +51,42 @@
                         <p>@Model.Education</p>
                     </div>
                 </div>
+                @* В файле Views/Resume/Details.cshtml *@
 
+                @if (User.IsInRole("Admin") || User.IsInRole("Recruiter"))
+                {
+                    <div class="card border-0 shadow-sm mt-4 overflow-hidden">
+                        <div class="card-header bg-warning text-dark fw-bold border-0 py-3">
+                            <i class="bi bi-star-fill me-2"></i> Управление талантами
+                        </div>
+                        <div class="card-body bg-light">
+                            <form asp-action="AddToTalentPool" method="post">
+                                <input type="hidden" name="resumeId" value="@Model.Id" />
+                
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold text-muted">Почему вы рекомендуете этого кандидата?</label>
+                                    <textarea name="comment" class="form-control border-0 shadow-sm" rows="3"
+                                              placeholder="Напишите краткий отзыв для работодателей..."></textarea>
+                                </div>
+                
+                                <button type="submit" class="btn btn-warning w-100 fw-bold shadow-sm">
+                                    <i class="bi bi-patch-check-fill me-1"></i> Добавить в "Золотой фонд"
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
                 <div class="card-footer bg-light p-4 border-0">
+
                     <div class="d-flex gap-2">
+
                         @if (Model.UserId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value)
                         {
                             <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning px-4">
                                 <i class="bi bi-pencil me-1"></i> Редактировать
                             </a>
                         }
+
                         <button onclick="window.history.back()" class="btn btn-outline-secondary px-4">
                             Назад
                         </button>

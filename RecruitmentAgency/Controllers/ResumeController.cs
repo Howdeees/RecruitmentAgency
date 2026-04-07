@@ -29,7 +29,6 @@ namespace RecruitmentAgency.Controllers
             return View(resumes);
         }
 
-        // Создание
         public IActionResult Create() => View();
 
         [HttpPost]
@@ -56,7 +55,6 @@ namespace RecruitmentAgency.Controllers
             return View(resume);
         }
 
-        // Редактирование
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -137,6 +135,48 @@ namespace RecruitmentAgency.Controllers
             await _context.SaveChangesAsync();
 
             TempData["Info"] = "Резюме успешно удалено.";
+            return RedirectToAction(nameof(Index));
+        }
+        [HttpPost]
+        [Authorize(Roles = "Admin,Recruiter")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddToTalentPool(int resumeId, string? comment, string returnUrl)
+        {
+            var resume = await _context.Resumes.Include(r => r.User).FirstOrDefaultAsync(r => r.Id == resumeId);
+            if (resume == null) return NotFound();
+
+            var application = await _context.Applications
+                .FirstOrDefaultAsync(a => a.ResumeId == resumeId);
+
+            if (application == null)
+            {
+                var defaultVacancy = await _context.Vacancies.FirstOrDefaultAsync();
+                if (defaultVacancy == null) return BadRequest("В системе должна быть хотя бы одна вакансия.");
+
+                application = new Application
+                {
+                    ResumeId = resumeId,
+                    UserId = resume.UserId,
+                    AppliedDate = DateTime.Now,
+                    Status = ApplicationStatus.Recommended,
+                    RecruiterNotes = comment ?? "Рекомендован из общего списка",
+                    VacancyId = defaultVacancy.Id,
+                    CoverLetter = "Добавлен рекрутером в золотой фонд"
+                };
+                _context.Applications.Add(application);
+            }
+            else
+            {
+                application.Status = ApplicationStatus.Recommended;
+                if (!string.IsNullOrEmpty(comment)) application.RecruiterNotes = comment;
+            }
+
+            await _context.SaveChangesAsync();
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
             return RedirectToAction(nameof(Index));
         }
         [Authorize(Roles = "Recruiter,Admin")]

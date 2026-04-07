@@ -113,8 +113,8 @@
                             @if (User.IsInRole("Recruiter"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link text-white" asp-controller="Resume" asp-action="AllResumes">
-                                        <i class="bi bi-search me-1"></i> База кандидатов
+                                    <a class="nav-link text-white d-flex" asp-controller="Resume" asp-action="AllResumes">
+                                        <i class="bi bi-search me-1 text-primary"></i> Соискатели
                                     </a>
                                 </li>
                                 <li class="nav-item">
@@ -156,6 +156,14 @@
                                             </a>
                                         </li>
                                     </ul>
+                                </li>
+                            }
+                            @if (User.IsInRole("Admin") || User.IsInRole("Recruiter") || User.IsInRole("Employer"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="TalentPool" asp-action="VerifiedList">
+                                        <i class="bi bi-patch-check me-1 text-success"></i> Рекомендованные кадры
+                                    </a>
                                 </li>
                             }
                         }
