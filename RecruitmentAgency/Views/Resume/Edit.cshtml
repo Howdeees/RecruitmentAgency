@@ -4,61 +4,94 @@
     ViewData["Title"] = "Редактирование резюме";
 }
 
-<div class="container mt-5">
+<div class="container mt-5 pb-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0 rounded-3">
-                <div class="card-header bg-warning text-dark p-4">
-                    <h2 class="mb-0 h4"><i class="bi bi-pencil-square me-2"></i>Редактирование резюме</h2>
+        <div class="col-md-9">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-dark text-white py-3 rounded-top-4">
+                    <h4 class="mb-0 fw-bold text-center"><i class="bi bi-pencil-square me-2"></i>Редактирование резюме</h4>
                 </div>
                 <div class="card-body p-4 p-md-5">
-                    <form asp-action="Edit" method="post">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-                        
-                        @* КРИТИЧНО: Скрытое поле ID *@
                         <input type="hidden" asp-for="Id" />
-                        @* Также скрываем UserId, чтобы он не потерялся при сохранении *@
-                        <input type="hidden" asp-for="UserId" />
 
-                        <div class="mb-4">
-                            <label asp-for="FullName" class="form-label fw-bold">ФИО</label>
-                            <input asp-for="FullName" class="form-control form-control-lg" placeholder="Иванов Иван Иванович" />
-                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-md-4 text-center border-end">
+                                <label class="form-label fw-bold d-block mb-3">Фотография</label>
+                                <div id="imagePreviewContainer" class="mb-3">
+                                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm"
+                                         style="width: 160px; height: 160px; overflow: hidden; border: 3px solid #fff;">
+                                        
+                                        @if (!string.IsNullOrEmpty(Model.ProfilePicture))
+                                        {
+                                            <img id="imagePreview" src="/uploads/avatars/@Model.ProfilePicture" style="width: 100%; height: 100%; object-fit: cover;" />
+                                            <i id="placeholderIcon" class="bi bi-camera text-secondary fs-1" style="display:none;"></i>
+                                        }
+                                        else
+                                        {
+                                            <img id="imagePreview" src="#" alt="Preview" style="display:none; width: 100%; height: 100%; object-fit: cover;" />
+                                            <i id="placeholderIcon" class="bi bi-person-bounding-box text-secondary fs-1"></i>
+                                        }
+                                    </div>
+                                </div>
+                                <input type="file" name="imageFile" class="form-control form-control-sm" accept="image/*" onchange="previewImage(this)" />
+                                <small class="text-muted d-block mt-2">Оставьте пустым, чтобы не менять фото</small>
+                            </div>
+
+                            <div class="col-md-8 ps-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="FullName" class="form-label fw-bold text-muted small text-uppercase">ФИО</label>
+                                    <input asp-for="FullName" class="form-control form-control-lg border-0 bg-light" />
+                                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <div class="mb-3">
+                                            <label asp-for="Title" class="form-label fw-bold text-muted small text-uppercase">Должность</label>
+                                            <input asp-for="Title" class="form-control border-0 bg-light" />
+                                            <span asp-validation-for="Title" class="text-danger small"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="mb-3">
+                                            <label asp-for="ExpectedSalary" class="form-label fw-bold text-muted small text-uppercase">Зарплата (₽)</label>
+                                            <input asp-for="ExpectedSalary" type="number" class="form-control border-0 bg-light" />
+                                            <span asp-validation-for="ExpectedSalary" class="text-danger small"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label asp-for="Title" class="form-label fw-bold">Желаемая должность</label>
-                            <input asp-for="Title" class="form-control" placeholder="Напр: Middle .NET Developer" />
-                            <span asp-validation-for="Title" class="text-danger"></span>
+                        <hr class="my-4 opacity-25">
+
+                        <div class="row">
+                            <div class="col-md-12 mb-4">
+                                <label asp-for="Education" class="form-label fw-bold text-muted small text-uppercase"><i class="bi bi-mortarboard me-2"></i>Образование</label>
+                                <textarea asp-for="Education" class="form-control border-0 bg-light" rows="3"></textarea>
+                                <span asp-validation-for="Education" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-12 mb-4">
+                                <label asp-for="Skills" class="form-label fw-bold text-muted small text-uppercase"><i class="bi bi-toggles me-2"></i>Ключевые навыки</label>
+                                <input asp-for="Skills" class="form-control border-0 bg-light" />
+                                <span asp-validation-for="Skills" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-12 mb-4">
+                                <label asp-for="Experience" class="form-label fw-bold text-muted small text-uppercase"><i class="bi bi-briefcase me-2"></i>Опыт работы</label>
+                                <textarea asp-for="Experience" class="form-control border-0 bg-light" rows="6"></textarea>
+                                <span asp-validation-for="Experience" class="text-danger small"></span>
+                            </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label asp-for="Skills" class="form-label fw-bold">Навыки и технологии</label>
-                            <textarea asp-for="Skills" class="form-control" rows="3" placeholder="C#, ASP.NET Core, Entity Framework, SQL..."></textarea>
-                            <span asp-validation-for="Skills" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-4">
-                            <label asp-for="Experience" class="form-label fw-bold">Опыт работы</label>
-                            <textarea asp-for="Experience" class="form-control" rows="6" placeholder="Опишите ваши предыдущие места работы и достижения..."></textarea>
-                            <span asp-validation-for="Experience" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-4">
-                            <label asp-for="Education" class="form-label fw-bold">Образование</label>
-                            <input asp-for="Education" class="form-control" placeholder="ВУЗ, специальность, год окончания" />
-                            <span asp-validation-for="Education" class="text-danger"></span>
-                        </div>
-
-                        <hr class="my-4">
-
-                        <div class="d-flex gap-3">
-                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <div class="d-flex gap-3 justify-content-center mt-4">
+                            <a asp-action="Index" class="btn btn-light px-5 py-2 border">Отмена</a>
+                            <button type="submit" class="btn btn-dark px-5 py-2 fw-bold shadow">
                                 <i class="bi bi-save me-2"></i>Сохранить изменения
                             </button>
-                            <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-4">
-                                Отмена
-                            </a>
                         </div>
                     </form>
                 </div>
@@ -71,4 +104,19 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        function previewImage(input) {
+            var file = input.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var img = document.getElementById('imagePreview');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    document.getElementById('placeholderIcon').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
 }

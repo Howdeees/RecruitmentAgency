@@ -1,43 +1,128 @@
 ﻿@model IEnumerable<RecruitmentAgency.Models.Resume>
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="display-6 fw-bold">Мои резюме</h1>
-        <a asp-action="Create" class="btn btn-primary shadow-sm">
-            <i class="bi bi-plus-lg"></i> Создать резюме
+@{
+    ViewData["Title"] = "Мои резюме";
+}
+
+<div class="container mt-4 pb-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 class="display-6 fw-bold mb-0">Мои резюме</h1>
+            <p class="text-muted">Управляйте вашими профессиональными профилями</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary btn-lg shadow-sm rounded-pill px-4">
+            <i class="bi bi-plus-lg me-2"></i>Создать резюме
         </a>
     </div>
 
     @if (!Model.Any())
     {
-        <div class="alert alert-light border shadow-sm text-center py-5">
-            <p class="text-muted mb-0">У вас пока нет созданных резюме.</p>
+        <div class="card border-0 shadow-sm text-center p-5 bg-white rounded-4">
+            <div class="card-body">
+                <div class="mb-4">
+                    <div class="bg-light d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 100px; height: 100px;">
+                        <i class="bi bi-file-earmark-person display-4 text-muted"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold text-dark">У вас пока нет резюме</h3>
+                <p class="text-muted mb-4">Создайте свое первое резюме, чтобы начать откликаться на вакансии и получать предложения.</p>
+                <a asp-action="Create" class="btn btn-primary px-5 py-2 fw-bold">Начать сейчас</a>
+            </div>
         </div>
     }
     else
     {
-        <div class="row g-3">
+        <div class="row g-4">
             @foreach (var item in Model)
             {
-                <div class="col-md-6">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-body">
-                            <h5 class="fw-bold text-primary">@item.Title</h5>
-                            <p class="text-muted small mb-3">Обновлено: @item.UpdatedDate.ToString("dd.MM.yyyy")</p>
-                            <div class="mb-3">
-                                <span class="badge bg-light text-dark border">Навыки: @(item.Skills.Length > 50 ? item.Skills.Substring(0, 50) + "..." : item.Skills)</span>
+                // Проверяем, рекомендовано ли это резюме (нужен .Include(r => r.Applications) в контроллере)
+                bool isRecommended = item.Applications?.Any(a => a.Status == RecruitmentAgency.Models.ApplicationStatus.Recommended) ?? false;
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm border-0 rounded-4 hover-card transition-all">
+                        
+                        @if (isRecommended)
+                        {
+                            <div class="position-absolute top-0 end-0 m-3" style="z-index: 1;">
+                                <span class="badge bg-warning text-dark shadow-sm px-3 py-2 rounded-pill">
+                                    <i class="bi bi-star-fill me-1"></i> Золотой фонд
+                                </span>
+                            </div>
+                        }
+
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="me-3">
+                                    @if (!string.IsNullOrEmpty(item.ProfilePicture))
+                                    {
+                                        <img src="/uploads/avatars/@item.ProfilePicture" 
+                                             class="rounded-circle shadow-sm border" 
+                                             style="width: 70px; height: 70px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center shadow-sm border" 
+                                             style="width: 70px; height: 70px;">
+                                            <i class="bi bi-person text-secondary fs-3"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold text-dark mb-1">@item.Title</h5>
+                                    <div class="text-muted small">
+                                        <i class="bi bi-clock-history me-1"></i> Обновлено: @item.UpdatedDate.ToString("dd.MM.yyyy")
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                @if (item.ExpectedSalary.HasValue)
+                                {
+                                    <div class="fw-bold text-success mb-2">@item.ExpectedSalary?.ToString("N0") ₽</div>
+                                }
+                                <p class="text-muted small mb-0 line-clamp-3">
+                                    <i class="bi bi-mortarboard me-1"></i> @(string.IsNullOrEmpty(item.Education) ? "Образование не указано" : item.Education)
+                                </p>
+                            </div>
+
+                            <div class="mb-0">
+                                <div class="d-flex flex-wrap gap-1">
+                                    @if (!string.IsNullOrEmpty(item.Skills))
+                                    {
+                                        var skills = item.Skills.Split(',').Take(3);
+                                        foreach (var skill in skills)
+                                        {
+                                            <span class="badge bg-light text-dark border fw-normal">@skill.Trim()</span>
+                                        }
+                                        if (item.Skills.Split(',').Length > 3)
+                                        {
+                                            <span class="badge bg-light text-muted border fw-normal">+ еще</span>
+                                        }
+                                    }
+                                </div>
                             </div>
                         </div>
-                        <div class="card-footer bg-white border-0 pb-3">
-                            <div class="d-flex gap-2">
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary btn-sm">Редактировать</a>
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">Просмотр</a>
-                                <form asp-action="Delete" asp-route-id="@item.Id" method="post"
-                                      onsubmit="return confirm('Вы уверены, что хотите навсегда удалить это резюме?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-trash me-1"></i> Удалить
-                                    </button>
-                                </form>
+
+                        <div class="card-footer bg-light border-0 p-3 rounded-bottom-4">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary w-100 btn-sm fw-bold">
+                                        <i class="bi bi-eye me-1"></i> Просмотр
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary w-100 btn-sm fw-bold">
+                                        <i class="bi bi-pencil me-1"></i> Изменить
+                                    </a>
+                                </div>
+                                <div class="col-12 mt-2">
+                                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" 
+                                          onsubmit="return confirm('Вы уверены, что хотите удалить это резюме?');">
+                                        <button type="submit" class="btn btn-link text-danger w-100 btn-sm text-decoration-none">
+                                            <i class="bi bi-trash me-1"></i> Удалить резюме
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -46,3 +131,21 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <style>
+        body { background-color: #f8f9fa; }
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+        }
+        .transition-all { transition: all 0.3s ease; }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;  
+            overflow: hidden;
+        }
+        .btn-link:hover { color: #dc3545 !important; }
+    </style>
+}

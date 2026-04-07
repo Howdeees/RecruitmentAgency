@@ -26,7 +26,9 @@ namespace RecruitmentAgency.Models
 
         [Display(Name = "Образование")]
         public string Education { get; set; }
-
+        public string? ProfilePicture { get; set; }
+        [Range(0, 9999999, ErrorMessage = "Введите корректную сумму")]
+        public decimal? ExpectedSalary { get; set; }
         public DateTime UpdatedDate { get; set; } = DateTime.Now;
 
         public string UserId { get; set; }

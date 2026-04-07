@@ -33,16 +33,34 @@ namespace RecruitmentAgency.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Resume resume)
+        public async Task<IActionResult> Create(Resume resume, IFormFile? imageFile)
         {
-
             ModelState.Remove("UserId");
             ModelState.Remove("User");
+            ModelState.Remove("ProfilePicture");
 
             if (ModelState.IsValid)
             {
                 var userId = _userManager.GetUserId(User);
                 if (string.IsNullOrEmpty(userId)) return Challenge();
+
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+
+                    var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/avatars");
+
+                    if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
+
+                    var filePath = Path.Combine(uploadDir, fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(stream);
+                    }
+
+                    resume.ProfilePicture = fileName;
+                }
 
                 resume.UserId = userId;
                 resume.UpdatedDate = DateTime.Now;
@@ -52,6 +70,7 @@ namespace RecruitmentAgency.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
+
             return View(resume);
         }
 
@@ -68,25 +87,70 @@ namespace RecruitmentAgency.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Resume resume)
+        public async Task<IActionResult> Edit(int id, Resume resume, IFormFile? imageFile)
         {
             if (id != resume.Id) return NotFound();
 
-            var existingResume = await _context.Resumes.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
-            if (existingResume == null || existingResume.UserId != _userManager.GetUserId(User))
-                return Forbid();
+            ModelState.Remove("UserId");
+            ModelState.Remove("User");
 
             if (ModelState.IsValid)
             {
-                resume.UserId = existingResume.UserId;
-                resume.UpdatedDate = DateTime.Now;
-                _context.Update(resume);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    // Находим оригинальную запись в базе без отслеживания (AsNoTracking), 
+                    // чтобы подтянуть старое имя фото и UserId
+                    var existingResume = await _context.Resumes.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
+
+                    if (existingResume == null) return NotFound();
+
+                    resume.UserId = existingResume.UserId; // Сохраняем владельца
+                    resume.UpdatedDate = DateTime.Now;
+
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        // Логика загрузки нового фото
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                        var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/avatars");
+                        if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
+
+                        var filePath = Path.Combine(uploadDir, fileName);
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+
+                        // Удаляем старый файл с диска, если он был
+                        if (!string.IsNullOrEmpty(existingResume.ProfilePicture))
+                        {
+                            var oldPath = Path.Combine(uploadDir, existingResume.ProfilePicture);
+                            if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+                        }
+
+                        resume.ProfilePicture = fileName;
+                    }
+                    else
+                    {
+                        // Если файл не выбран, оставляем старое имя фото
+                        resume.ProfilePicture = existingResume.ProfilePicture;
+                    }
+
+                    _context.Update(resume);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!ResumeExists(resume.Id)) return NotFound();
+                    else throw;
+                }
                 return RedirectToAction(nameof(Index));
             }
             return View(resume);
         }
-
+        private bool ResumeExists(int id)
+        {
+            return _context.Resumes.Any(e => e.Id == id);
+        }
         [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
