@@ -2,19 +2,48 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RecruitmentAgency.Data;
+using RecruitmentAgency.Models;
 
-[Authorize(Roles = "Admin")]
 public class AdminController : Controller
 {
+    [Authorize(Roles = "Admin,Recruiter")]
+    public async Task<IActionResult> Dashboard()
+    {
+        var stats = new StatsViewModel
+        {
+            TotalVacancies = await _context.Vacancies.CountAsync(),
+            TotalApplications = await _context.Applications.CountAsync(),
+            HiredCount = await _context.Applications.CountAsync(a => a.Status == ApplicationStatus.Accepted),
+
+            ApplicationsByStatus = await _context.Applications
+                .GroupBy(a => a.Status)
+                .ToDictionaryAsync(g => g.Key.ToString(), g => g.Count()),
+
+            TopVacancies = await _context.Applications
+                .GroupBy(a => a.Vacancy.Title)
+                .OrderByDescending(g => g.Count())
+                .Take(5)
+                .Select(g => new VacancyStats { Title = g.Key, Count = g.Count() })
+                .ToListAsync()
+        };
+
+        return View(stats);
+    }
+
+
     private readonly UserManager<IdentityUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
-
-    public AdminController(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
+    private readonly ApplicationDbContext _context;
+    public AdminController(UserManager<IdentityUser> userManager,
+                           RoleManager<IdentityRole> roleManager,
+                           ApplicationDbContext context)
     {
         _userManager = userManager;
         _roleManager = roleManager;
+        _context = context;
     }
-
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Users()
     {
         var users = await _userManager.Users.ToListAsync();
@@ -52,6 +81,7 @@ public class AdminController : Controller
         TempData["Info"] = $"Роль пользователя {user.Email} изменена на {newRole}";
         return RedirectToAction(nameof(Users));
     }
+
 }
 
 public class UserRolesViewModel

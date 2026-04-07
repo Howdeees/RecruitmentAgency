@@ -77,11 +77,11 @@ using (var scope = app.Services.CreateScope())
     {
         await userManager.AddToRoleAsync(employerUser, "Employer");
     }
-    string recruiterEmail = "david.aloyan.04@mail.ru";
-    var recruiterUser = await userManager.FindByEmailAsync(recruiterEmail);
-    if (recruiterUser != null && !await userManager.IsInRoleAsync(recruiterUser, "Recruiter"))
+    string recruiterEmail2 = "david.aloyan.04@mail.ru";
+    var recruiterUser2 = await userManager.FindByEmailAsync(recruiterEmail2);
+    if (recruiterUser2 != null && !await userManager.IsInRoleAsync(recruiterUser2, "Recruiter"))
     {
-        await userManager.AddToRoleAsync(recruiterUser, "Recruiter");
+        await userManager.AddToRoleAsync(recruiterUser2, "Recruiter");
     }
 }
 

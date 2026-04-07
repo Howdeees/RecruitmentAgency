@@ -139,5 +139,15 @@ namespace RecruitmentAgency.Controllers
             TempData["Info"] = "Резюме успешно удалено.";
             return RedirectToAction(nameof(Index));
         }
+        [Authorize(Roles = "Recruiter,Admin")]
+        public async Task<IActionResult> AllResumes()
+        {
+            var resumes = await _context.Resumes
+                .Include(r => r.User)
+                .OrderByDescending(r => r.UpdatedDate)
+                .ToListAsync();
+
+            return View(resumes);
+        }
     }
 }

@@ -25,6 +25,7 @@ namespace RecruitmentAgency.Models
         [Required(ErrorMessage = "Напишите сопроводительное письмо")]
         [Display(Name = "Сопроводительное письмо")]
         public string CoverLetter { get; set; }
+        public string? RecruiterNotes { get; set; }
 
         public DateTime AppliedDate { get; set; } = DateTime.Now;
 
