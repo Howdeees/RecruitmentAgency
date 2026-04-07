@@ -1,57 +1,114 @@
 ﻿@model RecruitmentAgency.Models.Vacancy
 
 @{
-    ViewData["Title"] = "Редактирование";
+    ViewData["Title"] = "Редактирование вакансии";
 }
 
-<div class="container mt-4">
+<div class="container mt-5 pb-5">
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <h2 class="card-title text-center mb-4">Редактирование вакансии</h2>
-                    
-                    <form asp-action="Edit">
-                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="col-md-10">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-dark text-white py-3 rounded-top-4">
+                    <h4 class="mb-0 fw-bold text-center"><i class="bi bi-pencil-square me-2"></i>Редактирование вакансии</h4>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                        @* Вывод всех ошибок для отладки *@
+                        <div asp-validation-summary="All" class="text-danger fw-bold mb-3"></div>
+                        
+                        @* Скрытые поля для сохранения ID и пути к изображению *@
                         <input type="hidden" asp-for="Id" />
-                        @* Скрытые поля, чтобы не потерять данные при сохранении *@
-                        <input type="hidden" asp-for="EmployerId" />
-                        <input type="hidden" asp-for="CreatedDate" />
+                        <input type="hidden" asp-for="ImagePath" />
 
-                        <div class="form-group mb-3">
-                            <label asp-for="Title" class="form-label fw-bold">Название вакансии</label>
-                            <input asp-for="Title" class="form-control" placeholder="Напр. Senior .NET Developer" />
-                            <span asp-validation-for="Title" class="text-danger"></span>
+                        <div class="row mb-4 align-items-center">
+                            @* Блок логотипа *@
+                            <div class="col-md-4 text-center border-end">
+                                <label class="form-label fw-bold d-block mb-3">Логотип компании</label>
+                                <div id="imagePreviewContainer" class="mb-3">
+                                    <div class="bg-light rounded-4 d-inline-flex align-items-center justify-content-center shadow-sm"
+                                         style="width: 160px; height: 160px; overflow: hidden; border: 3px solid #fff; padding: 10px; background-color: #fff !important;">
+                                        
+                                        @if (!string.IsNullOrEmpty(Model.ImagePath))
+                                        {
+                                            <img id="imagePreview" src="/uploads/vacancies/@Model.ImagePath" style="width: 100%; height: 100%; object-fit: contain;" />
+                                            <i id="placeholderIcon" class="bi bi-building text-secondary fs-1" style="display:none;"></i>
+                                        }
+                                        else
+                                        {
+                                            <img id="imagePreview" src="#" alt="Preview" style="display:none; width: 100%; height: 100%; object-fit: contain;" />
+                                            <i id="placeholderIcon" class="bi bi-building text-secondary fs-1"></i>
+                                        }
+                                    </div>
+                                </div>
+                                <input type="file" name="imageFile" class="form-control form-control-sm" accept="image/*" onchange="previewImage(this)" />
+                                <small class="text-muted d-block mt-2">Оставьте пустым, чтобы сохранить текущий логотип</small>
+                            </div>
+
+                            <div class="col-md-8 ps-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="Title" class="form-label fw-bold text-muted small text-uppercase">Название вакансии</label>
+                                    <input asp-for="Title" class="form-control form-control-lg border-0 bg-light" placeholder="Напр: .NET Разработчик" />
+                                    <span asp-validation-for="Title" class="text-danger small"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <div class="mb-3">
+                                            <label asp-for="CompanyName" class="form-label fw-bold text-muted small text-uppercase">Компания</label>
+                                            <input asp-for="CompanyName" class="form-control border-0 bg-light" />
+                                            <span asp-validation-for="CompanyName" class="text-danger small"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="mb-3">
+                                            <label asp-for="Salary" class="form-label fw-bold text-muted small text-uppercase">Зарплата (₽)</label>
+                                            <input asp-for="Salary" type="number" class="form-control border-0 bg-light" />
+                                            <span asp-validation-for="Salary" class="text-danger small"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+                        <hr class="my-4 opacity-25">
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Salary" class="form-label fw-bold">Зарплата (руб.)</label>
-                                <input asp-for="Salary" class="form-control" type="number" />
-                                <span asp-validation-for="Salary" class="text-danger"></span>
+                            <div class="col-md-12 mb-4">
+                                <label asp-for="Schedule" class="form-label fw-bold text-muted small text-uppercase"><i class="bi bi-clock me-2"></i>График работы</label>
+                                <select asp-for="Schedule" class="form-select border-0 bg-light">
+                                    <option value="Полный день">Полный день</option>
+                                    <option value="Удаленка">Удаленка</option>
+                                    <option value="Гибрид">Гибрид</option>
+                                    <option value="Гибкий график">Гибкий график</option>
+                                </select>
+                                <span asp-validation-for="Schedule" class="text-danger small"></span>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label asp-for="Schedule" class="form-label fw-bold">График</label>
-                                <input asp-for="Schedule" class="form-control" placeholder="5/2, Удаленно" />
-                                <span asp-validation-for="Schedule" class="text-danger"></span>
+
+                            <div class="col-md-12 mb-4">
+                                <label asp-for="Description" class="form-label fw-bold text-muted small text-uppercase"><i class="bi bi-card-text me-2"></i>Описание вакансии</label>
+                                <textarea asp-for="Description" class="form-control border-0 bg-light" rows="6" placeholder="Опишите задачи и условия работы..."></textarea>
+                                <span asp-validation-for="Description" class="text-danger small"></span>
+                            </div>
+
+                            @* НОВОЕ ПОЛЕ: ТРЕБОВАНИЯ (как в Create) *@
+                            <div class="col-md-12 mb-4">
+                                <label asp-for="Requirements" class="form-label fw-bold text-muted small text-uppercase"><i class="bi bi-list-check me-2"></i>Требования к кандидату</label>
+                                <textarea asp-for="Requirements" class="form-control border-0 bg-light" rows="6" placeholder="Опишите навыки, опыт и образование..."></textarea>
+                                <span asp-validation-for="Requirements" class="text-danger small"></span>
                             </div>
                         </div>
 
-                        <div class="form-group mb-3">
-                            <label asp-for="Description" class="form-label fw-bold">Описание</label>
-                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
-                            <span asp-validation-for="Description" class="text-danger"></span>
+                        <div class="text-center mb-4">
+                            <span class="badge bg-light text-dark border fw-normal px-3 py-2 rounded-pill">
+                                <i class="bi bi-eye me-1"></i> Просмотров: @Model.ViewsCount
+                            </span>
                         </div>
 
-                        <div class="form-group mb-4">
-                            <label asp-for="Requirements" class="form-label fw-bold">Требования</label>
-                            <textarea asp-for="Requirements" class="form-control" rows="3"></textarea>
-                            <span asp-validation-for="Requirements" class="text-danger"></span>
-                        </div>
-
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a asp-action="Index" class="btn btn-light border">Отмена</a>
-                            <button type="submit" class="btn btn-primary px-4">Сохранить изменения</button>
+                        <div class="d-flex gap-3 justify-content-center mt-4 pt-3 border-top">
+                            <a asp-action="Index" class="btn btn-light px-5 py-2 border">Отмена</a>
+                            <button type="submit" class="btn btn-dark px-5 py-2 fw-bold shadow">
+                                <i class="bi bi-save me-2"></i>Сохранить изменения
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -64,4 +121,19 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        function previewImage(input) {
+            var file = input.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var img = document.getElementById('imagePreview');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    document.getElementById('placeholderIcon').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
 }

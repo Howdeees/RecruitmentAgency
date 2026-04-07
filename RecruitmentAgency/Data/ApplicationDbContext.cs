@@ -9,8 +9,6 @@ namespace RecruitmentAgency.Data
         public DbSet<Resume> Resumes { get; set; }
         public DbSet<Vacancy> Vacancies { get; set; }
         public DbSet<Application> Applications { get; set; }
-        public DbSet<Candidate> Candidates { get; set; }
-        public DbSet<Interview> Interviews { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

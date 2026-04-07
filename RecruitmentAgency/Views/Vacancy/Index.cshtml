@@ -2,115 +2,108 @@
 
 @{
     ViewData["Title"] = "Поиск вакансий";
-    bool canManage = User.IsInRole("Employer") || User.IsInRole("Admin");
+    bool canManage = User.IsInRole("Admin");
 }
 
 <div class="mt-4 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="display-6 fw-bold">Найти работу</h1>
+        <div>
+            <h1 class="display-6 fw-bold mb-0">Найти работу</h1>
+            <p class="text-muted">Актуальные предложения от ведущих компаний</p>
+        </div>
         @if (canManage)
         {
-            <a asp-action="Create" class="btn btn-success shadow-sm">
-                <i class="bi bi-plus-lg"></i> Разместить вакансию
+            <a asp-action="Create" class="btn btn-success shadow-sm rounded-pill px-4">
+                <i class="bi bi-plus-lg me-1"></i> Разместить вакансию
             </a>
         }
     </div>
 
-    <div class="card shadow-sm border-0 bg-white p-4">
-        <form asp-action="Index" method="get" class="row g-3">
+    <div class="card shadow-sm border-0 bg-white p-4 rounded-4">
+        <form asp-action="Index" method="get" class="row g-3 align-items-end">
             <div class="col-md-4">
-                <label class="form-label small fw-bold">Поиск по ключевым словам</label>
-                <div class="input-group search-group shadow-sm-hover">
-                    <span class="input-group-text bg-white border-end-0 text-muted">
-                        <i class="bi bi-search"></i>
-                    </span>
-                    <input type="text"
-                           name="searchString"
-                           value="@ViewData["CurrentSearch"]"
-                           class="form-control border-start-0 ps-0"
-                           placeholder="Название или описание..." />
+                <label class="form-label small fw-bold text-muted text-uppercase">Поиск</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="searchString" value="@ViewData["CurrentSearch"]" class="form-control border-0 bg-light" placeholder="Ключевые слова..." />
                 </div>
             </div>
-
             <div class="col-md-3">
-                <label class="form-label small fw-bold">График работы</label>
-                <select name="schedule" class="form-select">
+                <label class="form-label small fw-bold text-muted text-uppercase">График</label>
+                <select name="schedule" class="form-select border-0 bg-light">
                     <option value="">Все варианты</option>
-                    @if (ViewBag.Schedules != null)
-                    {
-                        foreach (var item in ViewBag.Schedules)
-                        {
-                            if (item == (string)ViewData["CurrentSchedule"])
-                            {
-                                <option value="@item" selected>@item</option>
-                            }
-                            else
-                            {
-                                <option value="@item">@item</option>
-                            }
+                    @if (ViewBag.Schedules != null) {
+                        foreach (var item in ViewBag.Schedules) {
+                            <option value="@item" selected="@(item == (string)ViewData["CurrentSchedule"])">@item</option>
                         }
                     }
                 </select>
             </div>
-
             <div class="col-md-3">
-                <label class="form-label small fw-bold">Мин. зарплата (руб.)</label>
-                <input type="number" name="minSalary" value="@ViewData["CurrentMinSalary"]"
-                       class="form-control" placeholder="От..." />
+                <label class="form-label small fw-bold text-muted text-uppercase">Мин. зарплата</label>
+                <input type="number" name="minSalary" value="@ViewData["CurrentMinSalary"]" class="form-control border-0 bg-light" placeholder="От..." />
             </div>
-
-            <div class="col-md-2 d-flex align-items-end gap-2">
-                <button type="submit" class="btn btn-primary w-100">Найти</button>
-                <a asp-action="Index" class="btn btn-outline-secondary" title="Сбросить"><i class="bi bi-arrow-clockwise"></i></a>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100 shadow-sm">Найти</button>
+                <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-clockwise"></i></a>
             </div>
         </form>
     </div>
 </div>
 
-<hr class="my-4 opacity-0">
+<div class="row row-cols-1 g-4">
+    @foreach (var item in Model)
+    {
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0 rounded-4 position-relative hover-lift transition-all overflow-hidden bg-white">
+                <div class="position-absolute top-0 end-0 m-3" style="z-index: 2;">
+                    <span class="badge bg-light text-muted border rounded-pill fw-normal">
+                        <i class="bi bi-eye me-1"></i> @item.ViewsCount
+                    </span>
+                </div>
 
-@if (!Model.Any())
-{
-    <div class="text-center py-5">
-        <i class="bi bi-emoji-frown display-1 text-muted"></i>
-        <h3 class="mt-3 text-muted">Ничего не найдено</h3>
-        <p>Попробуйте изменить параметры поиска или <a asp-action="Index">сбросить фильтры</a>.</p>
-    </div>
-}
-else
-{
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        @foreach (var item in Model)
-        {
-            <div class="col">
-                <div class="card h-100 shadow-sm border-0 bg-light">
-                    <div class="card-body">
-                        <h5 class="card-title text-primary fw-bold">@item.Title</h5>
-                        <h6 class="card-subtitle mb-3 text-success fw-bold">
-                            @item.Salary.ToString("N0") руб.
-                        </h6>
-                        <p class="card-text text-muted mb-4" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-                            @item.Description
-                        </p>
-                        <ul class="list-unstyled mb-0 small text-secondary">
-                            <li class="mb-1"><i class="bi bi-clock me-2"></i>@item.Schedule</li>
-                            <li><i class="bi bi-calendar3 me-2"></i>@item.CreatedDate.ToString("dd.MM.yyyy")</li>
-                        </ul>
-                    </div>
-                    <div class="card-footer bg-white border-0 pt-0 pb-3">
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary btn-sm px-3 shadow-sm">Подробнее</a>
-                            @if (canManage)
-                            {
-                                <div class="btn-group">
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil"></i></a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></a>
+                <div class="row g-0 align-items-center">
+                    <div class="col-md-9">
+                        <div class="card-body p-4 p-md-5">
+                            <div class="mb-3">
+                                <h4 class="card-title fw-bold text-dark mb-1">@item.Title</h4>
+                                <p class="text-muted mb-0"><i class="bi bi-building me-1"></i> @item.CompanyName</p>
+                            </div>
+                            <div class="d-flex align-items-center gap-3 mb-4">
+                                <h5 class="text-success fw-bold mb-0">@item.Salary.ToString("N0") ₽</h5>
+                                <span class="text-muted small"><i class="bi bi-clock me-1"></i> @item.Schedule</span>
+                            </div>
+                            <p class="card-text text-muted small mb-4 line-clamp-3">@item.Description</p>
+                            <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                                <div class="text-secondary x-small"><i class="bi bi-calendar3 me-1"></i> @item.CreatedDate.ToString("dd.MM.yyyy")</div>
+                                <div class="d-flex gap-2">
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary btn-sm px-4 rounded-pill fw-bold">Подробнее</a>
+                                    @if (canManage) {
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary border-0"><i class="bi bi-pencil-square"></i></a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash"></i></a>
+                                    }
                                 </div>
-                            }
+                            </div>
                         </div>
+                    </div>
+                    <div class="col-md-3 border-start h-100 bg-light d-flex align-items-center justify-content-center p-4">
+                        @if (!string.IsNullOrEmpty(item.ImagePath)) {
+                            <img src="/uploads/vacancies/@item.ImagePath" class="img-fluid" style="max-height: 140px; width: auto; object-fit: contain;" />
+                        } else {
+                            <div class="text-center text-muted opacity-25 py-5"><i class="bi bi-building display-1"></i></div>
+                        }
                     </div>
                 </div>
             </div>
-        }
-    </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <style>
+        .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 1rem 3rem rgba(0,0,0,0.1) !important; }
+        .transition-all { transition: all 0.3s ease; }
+        .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .x-small { font-size: 0.75rem; }
+    </style>
 }

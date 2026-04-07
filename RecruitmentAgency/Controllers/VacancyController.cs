@@ -4,11 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RecruitmentAgency.Data;
 using RecruitmentAgency.Models;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RecruitmentAgency.Controllers
 {
+    [Authorize] // По умолчанию всё закрыто
     public class VacancyController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -20,11 +19,10 @@ namespace RecruitmentAgency.Controllers
             _userManager = userManager;
         }
 
-        // СПИСОК ВАКАНСИЙ
         [AllowAnonymous]
         public async Task<IActionResult> Index(string searchString, string schedule, decimal? minSalary)
         {
-            var vacanciesQuery = _context.Vacancies.Include(v => v.Employer).AsQueryable();
+            var vacanciesQuery = _context.Vacancies.AsNoTracking().AsQueryable();
 
             if (!string.IsNullOrEmpty(searchString))
             {
@@ -42,46 +40,50 @@ namespace RecruitmentAgency.Controllers
                 vacanciesQuery = vacanciesQuery.Where(v => v.Salary >= minSalary.Value);
             }
 
-            ViewData["CurrentSearch"] = searchString;
-            ViewData["CurrentSchedule"] = schedule;
-            ViewData["CurrentMinSalary"] = minSalary;
-
             ViewBag.Schedules = await _context.Vacancies
                 .Select(v => v.Schedule)
                 .Distinct()
                 .Where(s => s != null)
                 .ToListAsync();
 
+            ViewData["CurrentSearch"] = searchString;
+            ViewData["CurrentSchedule"] = schedule;
+            ViewData["CurrentMinSalary"] = minSalary;
+
             var result = await vacanciesQuery.OrderByDescending(v => v.CreatedDate).ToListAsync();
             return View(result);
         }
+
         [Authorize(Roles = "Employer,Admin")]
         public async Task<IActionResult> MyVacancies()
         {
             var userId = _userManager.GetUserId(User);
 
             var myVacancies = await _context.Vacancies
-                .Where(v => v.EmployerId == userId)
-                .Include(v => v.Applications)
+                .Where(v => v.EmployerId == userId || User.IsInRole("Admin")) // Админ видит всё, работодатель — своё
                 .OrderByDescending(v => v.CreatedDate)
                 .ToListAsync();
 
             return View(myVacancies);
         }
-        // ДЕТАЛИ
+
         [AllowAnonymous]
-        public async Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Details(int? id)
         {
+            if (id == null) return NotFound();
+
             var vacancy = await _context.Vacancies
-                .Include(v => v.Employer)
-                .FirstOrDefaultAsync(v => v.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id);
 
             if (vacancy == null) return NotFound();
+
+            vacancy.ViewsCount++;
+            _context.Update(vacancy);
+            await _context.SaveChangesAsync();
 
             return View(vacancy);
         }
 
-        // СОЗДАНИЕ
         [Authorize(Roles = "Employer,Admin")]
         public IActionResult Create()
         {
@@ -91,22 +93,41 @@ namespace RecruitmentAgency.Controllers
         [HttpPost]
         [Authorize(Roles = "Employer,Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Vacancy vacancy)
+        public async Task<IActionResult> Create(Vacancy vacancy, IFormFile? imageFile)
         {
+          
+
             if (ModelState.IsValid)
             {
-                var user = await _userManager.GetUserAsync(User);
-                if (user == null) return Challenge();
+                // Привязываем вакансию к текущему пользователю
+                vacancy.EmployerId = _userManager.GetUserId(User);
 
-                vacancy.EmployerId = user.Id;
+                if (imageFile != null && imageFile.Length > 0)
+                {
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                    var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/vacancies");
+
+                    if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
+
+                    var filePath = Path.Combine(uploadDir, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await imageFile.CopyToAsync(stream);
+                    }
+                    vacancy.ImagePath = fileName;
+                }
+
+                vacancy.CreatedDate = DateTime.Now;
+                vacancy.ViewsCount = 0;
+
                 _context.Add(vacancy);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(MyVacancies));
             }
+
             return View(vacancy);
         }
 
-        // РЕДАКТИРОВАНИЕ 
         [Authorize(Roles = "Employer,Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -115,7 +136,6 @@ namespace RecruitmentAgency.Controllers
             var vacancy = await _context.Vacancies.FindAsync(id);
             if (vacancy == null) return NotFound();
 
-            
             var userId = _userManager.GetUserId(User);
             if (!User.IsInRole("Admin") && vacancy.EmployerId != userId)
             {
@@ -128,60 +148,106 @@ namespace RecruitmentAgency.Controllers
         [HttpPost]
         [Authorize(Roles = "Employer,Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Vacancy vacancy)
+        public async Task<IActionResult> Edit(int id, Vacancy vacancy, IFormFile? imageFile)
         {
             if (id != vacancy.Id) return NotFound();
 
-            var existingVacancy = await _context.Vacancies
-                .AsNoTracking()
-                .FirstOrDefaultAsync(v => v.Id == id);
-
-            if (existingVacancy == null) return NotFound();
-
-            var userId = _userManager.GetUserId(User);
-            if (!User.IsInRole("Admin") && existingVacancy.EmployerId != userId)
-            {
-                return Forbid();
-            }
+            ModelState.Remove("imageFile");
+            ModelState.Remove("ImagePath");
+            ModelState.Remove("EmployerId");
 
             if (ModelState.IsValid)
             {
                 try
                 {
+                    var existingVacancy = await _context.Vacancies.AsNoTracking().FirstOrDefaultAsync(v => v.Id == id);
+                    if (existingVacancy == null) return NotFound();
+
+                    // Проверка прав (защита от подмены ID в браузере)
+                    var userId = _userManager.GetUserId(User);
+                    if (!User.IsInRole("Admin") && existingVacancy.EmployerId != userId)
+                    {
+                        return Forbid();
+                    }
+
+                    // Сохраняем системные данные
                     vacancy.EmployerId = existingVacancy.EmployerId;
                     vacancy.CreatedDate = existingVacancy.CreatedDate;
+                    vacancy.ViewsCount = existingVacancy.ViewsCount;
+
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
+                        var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/vacancies");
+
+                        if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
+
+                        var filePath = Path.Combine(uploadDir, fileName);
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+
+                        if (!string.IsNullOrEmpty(existingVacancy.ImagePath))
+                        {
+                            var oldPath = Path.Combine(uploadDir, existingVacancy.ImagePath);
+                            if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+                        }
+
+                        vacancy.ImagePath = fileName;
+                    }
+                    else
+                    {
+                        vacancy.ImagePath = existingVacancy.ImagePath;
+                    }
 
                     _context.Update(vacancy);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_context.Vacancies.Any(e => e.Id == vacancy.Id)) return NotFound();
+                    if (!VacancyExists(vacancy.Id)) return NotFound();
                     else throw;
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(MyVacancies));
             }
             return View(vacancy);
         }
 
-        // УДАЛЕНИЕ
+        [HttpPost]
         [Authorize(Roles = "Employer,Admin")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
+            var currentUserId = _userManager.GetUserId(User);
             var vacancy = await _context.Vacancies.FindAsync(id);
+
             if (vacancy == null) return NotFound();
 
-            var userId = _userManager.GetUserId(User);
-
-            if (!User.IsInRole("Admin") && vacancy.EmployerId != userId)
+            if (!User.IsInRole("Admin") && vacancy.EmployerId != currentUserId)
             {
-                return Forbid();
+                TempData["ErrorMessage"] = "Ошибка доступа.";
+                return RedirectToAction(nameof(MyVacancies));
+            }
+
+            // Удаляем связанные отклики, чтобы не было ошибки внешнего ключа
+            var relatedApplications = _context.Applications.Where(a => a.VacancyId == id);
+            _context.Applications.RemoveRange(relatedApplications);
+
+            // Удаляем файл с диска
+            if (!string.IsNullOrEmpty(vacancy.ImagePath))
+            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/vacancies", vacancy.ImagePath);
+                if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
             }
 
             _context.Vacancies.Remove(vacancy);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            TempData["Info"] = "Вакансия удалена.";
+            return RedirectToAction(nameof(MyVacancies));
         }
+
+        private bool VacancyExists(int id) => _context.Vacancies.Any(e => e.Id == id);
     }
 }

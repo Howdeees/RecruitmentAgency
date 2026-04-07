@@ -1,57 +1,89 @@
 ﻿@model RecruitmentAgency.Models.Resume
 
-<div class="container mt-4">
+@{
+    ViewData["Title"] = "Создание резюме";
+}
+
+<div class="container mt-5 pb-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow border-0">
-                <div class="card-body p-4">
-                    @* Исправленная логика заголовка *@
-                    <h2 class="mb-4">@(Model == null || Model.Id == 0 ? "Новое резюме" : "Редактирование резюме")</h2>
-                    
-                    @* КРИТИЧНО: Добавлен method="post" *@
-                    <form asp-action="@(Model == null || Model.Id == 0 ? "Create" : "Edit")" method="post">
-                        
-                        @* Вывод всех ошибок валидации (поможет увидеть, если что-то не так с UserId) *@
-                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+        <div class="col-md-9">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-primary text-white py-3 rounded-top-4">
+                    <h4 class="mb-0 fw-bold text-center"><i class="bi bi-file-earmark-person me-2"></i>Заполнение резюме</h4>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                        @if (Model != null && Model.Id != 0)
-                        {
-                            <input type="hidden" asp-for="Id" />
-                        }
-                        <div class="mb-3">
-                            <label asp-for="FullName" class="form-label fw-bold">Полное имя (ФИО)</label>
-                            <input asp-for="FullName" class="form-control" placeholder="Иванов Иван Иванович" />
-                            <span asp-validation-for="FullName" class="text-danger"></span>
-                        </div>
-                        <div class="mb-3">
-                            <label asp-for="Title" class="form-label fw-bold">Желаемая должность</label>
-                            <input asp-for="Title" class="form-control" placeholder="Напр: Middle .NET Developer" />
-                            <span asp-validation-for="Title" class="text-danger"></span>
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-md-4 text-center border-end">
+                                <label class="form-label fw-bold d-block mb-3">Фотография</label>
+                                <div id="imagePreviewContainer" class="mb-3">
+                                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center shadow-sm"
+                                         style="width: 160px; height: 160px; overflow: hidden; border: 3px solid #f8f9fa;">
+                                        <i id="placeholderIcon" class="bi bi-person-bounding-box text-secondary fs-1"></i>
+                                        <img id="imagePreview" src="#" alt="Preview" style="display:none; width: 100%; height: 100%; object-fit: cover;" />
+                                    </div>
+                                </div>
+                                <input type="file" name="imageFile" id="imageInput" class="form-control form-control-sm" accept="image/*" onchange="previewImage(this)" />
+                            </div>
+
+                            <div class="col-md-8 ps-md-4">
+                                <div class="mb-3">
+                                    <label asp-for="FullName" class="form-label fw-bold text-muted small text-uppercase">ФИО</label>
+                                    <input asp-for="FullName" class="form-control form-control-lg border-0 bg-light" placeholder="Константинопольский Александр" />
+                                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <div class="mb-3">
+                                            <label asp-for="Title" class="form-label fw-bold text-muted small text-uppercase">Должность</label>
+                                            <input asp-for="Title" class="form-control border-0 bg-light" placeholder="Напр: .NET Разработчик" />
+                                            <span asp-validation-for="Title" class="text-danger small"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="mb-3">
+                                            <label asp-for="ExpectedSalary" class="form-label fw-bold text-muted small text-uppercase">Зарплата (руб.)</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text border-0 bg-light text-muted">₽</span>
+                                                <input asp-for="ExpectedSalary" type="number" class="form-control border-0 bg-light" placeholder="150 000" />
+                                            </div>
+                                            <span asp-validation-for="ExpectedSalary" class="text-danger small"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Skills" class="form-label fw-bold">Навыки</label>
-                            <textarea asp-for="Skills" class="form-control" rows="2" placeholder="C#, ASP.NET Core, SQL..."></textarea>
-                            <span asp-validation-for="Skills" class="text-danger"></span>
+                        <hr class="my-4 opacity-25">
+
+                        <div class="row">
+                            <div class="col-md-12 mb-4">
+                                <label asp-for="Education" class="form-label fw-bold text-muted small text-uppercase"><i class="bi bi-mortarboard me-2"></i>Образование</label>
+                                <textarea asp-for="Education" class="form-control border-0 bg-light" rows="3" placeholder="Учебное заведение, факультет, год окончания..."></textarea>
+                                <span asp-validation-for="Education" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-12 mb-4">
+                                <label asp-for="Skills" class="form-label fw-bold text-muted small text-uppercase"><i class="bi bi-toggles me-2"></i>Ключевые навыки</label>
+                                <input asp-for="Skills" class="form-control border-0 bg-light" placeholder="C#, ASP.NET Core, SQL, Git..." />
+                                <span asp-validation-for="Skills" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-12 mb-4">
+                                <label asp-for="Experience" class="form-label fw-bold text-muted small text-uppercase"><i class="bi bi-briefcase me-2"></i>Опыт работы</label>
+                                <textarea asp-for="Experience" class="form-control border-0 bg-light" rows="6" placeholder="Расскажите о последних местах работы и достижениях..."></textarea>
+                                <span asp-validation-for="Experience" class="text-danger small"></span>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Experience" class="form-label fw-bold">Опыт работы</label>
-                            <textarea asp-for="Experience" class="form-control" rows="5"></textarea>
-                            <span asp-validation-for="Experience" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-4">
-                            <label asp-for="Education" class="form-label fw-bold">Образование</label>
-                            <input asp-for="Education" class="form-control" />
-                            <span asp-validation-for="Education" class="text-danger"></span>
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary px-4">
-                                <i class="bi bi-check-lg"></i> Сохранить
+                        <div class="d-flex gap-3 justify-content-center mt-4">
+                            <a asp-action="Index" class="btn btn-light px-5 py-2 border">Отмена</a>
+                            <button type="submit" class="btn btn-primary px-5 py-2 fw-bold shadow">
+                                <i class="bi bi-check2-circle me-2"></i>Опубликовать резюме
                             </button>
-                            <a asp-action="Index" class="btn btn-light border">Отмена</a>
                         </div>
                     </form>
                 </div>
@@ -59,3 +91,23 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function previewImage(input) {
+            var file = input.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                    document.getElementById('placeholderIcon').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+}

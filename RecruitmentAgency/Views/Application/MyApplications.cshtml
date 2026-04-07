@@ -20,7 +20,7 @@
         <div class="card border-0 shadow-sm text-center p-5 bg-white">
             <div class="card-body">
                 <div class="mb-4">
-                    <i class="bi bi-briefcase-flood display-1 text-light"></i>
+                    <i class="bi bi-briefcase display-1 text-light"></i>
                 </div>
                 <h3 class="fw-bold">Список пуст</h3>
                 <p class="text-muted mb-4">Вы еще не отправляли откликов на вакансии нашего агентства.</p>
@@ -47,15 +47,29 @@
                         {
                             <tr>
                                 <td class="ps-4">
-                                    <div class="fw-bold text-primary">@item.Vacancy.Title</div>
-                                    <div class="text-muted x-small">Ref: #@item.VacancyId</div>
+                                    @if (item.Vacancy != null)
+                                    {
+                                        @* ССЫЛКА НА ВАКАНСИЮ *@
+                                        <a asp-controller="Vacancy" asp-action="Details" asp-route-id="@item.VacancyId" 
+                                           class="text-decoration-none fw-bold text-primary hover-underline">
+                                            <i class="bi bi-briefcase me-1"></i> @item.Vacancy.Title
+                                        </a>
+                                        <div class="text-muted x-small">Ref: #@item.VacancyId</div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Вакансия удалена</span>
+                                    }
                                 </td>
                                 <td>
-                                    <a asp-controller="Resume" asp-action="Details" asp-route-id="@item.ResumeId" 
-                                       class="text-decoration-none text-dark d-flex align-items-center">
-                                        <i class="bi bi-file-earmark-person-fill text-secondary me-2"></i>
-                                        <span>@item.Resume.Title</span>
-                                    </a>
+                                    @if (item.Resume != null)
+                                    {
+                                        <a asp-controller="Resume" asp-action="Details" asp-route-id="@item.ResumeId" 
+                                           class="text-decoration-none text-dark d-flex align-items-center">
+                                            <i class="bi bi-file-earmark-person-fill text-secondary me-2"></i>
+                                            <span>@item.Resume.Title</span>
+                                        </a>
+                                    }
                                 </td>
                                 <td class="text-muted">
                                     @item.AppliedDate.ToString("dd MMM yyyy")
@@ -70,19 +84,29 @@
                                             RecruitmentAgency.Models.ApplicationStatus.Rejected => ("bg-danger text-white", "Отказ"),
                                             RecruitmentAgency.Models.ApplicationStatus.RejectedEmployer => ("bg-danger text-white", "Отказ работодателем"),
                                             RecruitmentAgency.Models.ApplicationStatus.RejectedRecruiter => ("bg-danger text-white", "Отказ рекрутером"),
-                                            RecruitmentAgency.Models.ApplicationStatus.Interview => ("bg-danger text-white", "Собеседование"),
+                                            RecruitmentAgency.Models.ApplicationStatus.Interview => ("bg-primary text-white", "Собеседование"),
+                                            RecruitmentAgency.Models.ApplicationStatus.Recommended => ("bg-warning text-dark", "⭐ Золотой фонд"),
                                             _ => ("bg-secondary text-white", item.Status.ToString())
                                         };
                                     }
-                                    <span class="badge @badgeClass rounded-pill px-3 py-2 fw-medium">
+                                    <span class="badge @badgeClass rounded-pill px-3 py-2 fw-medium shadow-sm">
                                         @statusName
                                     </span>
                                 </td>
                                 <td class="pe-4 text-end">
-                                    <a asp-controller="Vacancy" asp-action="Details" asp-route-id="@item.VacancyId" 
-                                       class="btn btn-sm btn-outline-secondary rounded-pill">
-                                        <i class="bi bi-eye me-1"></i> О вакансии
-                                    </a>
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a asp-controller="Vacancy" asp-action="Details" asp-route-id="@item.VacancyId" 
+                                           class="btn btn-sm btn-outline-primary rounded-pill" title="Посмотреть вакансию">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        
+                                        <form asp-controller="Application" asp-action="Cancel" asp-route-id="@item.Id" method="post" 
+                                              onsubmit="return confirm('Вы уверены, что хотите отозвать свой отклик на эту вакансию?');">
+                                            <button type="submit" class="btn btn-sm btn-danger rounded-pill shadow-sm">
+                                                <i class="bi bi-x-circle me-1"></i> Отозвать
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -100,5 +124,6 @@
         .table tbody tr { transition: background-color 0.2s; }
         .table tbody tr:hover { background-color: #f8f9ff !important; }
         .badge { font-size: 0.8rem; letter-spacing: 0.3px; }
+        .hover-underline:hover { text-decoration: underline !important; }
     </style>
 }

@@ -1,0 +1,88 @@
+﻿@model IEnumerable<RecruitmentAgency.Models.Application>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-primary mb-0">
+                <i class="bi bi-stars me-2"></i>Золотой фонд кандидатов
+            </h2>
+            <p class="text-muted small">Кандидаты, успешно прошедшие предварительный отбор агентства</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm border-top border-4 border-success">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-verified me-3">
+                                    @item.Resume.FullName.Substring(0,1).ToUpper()
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-0">@item.Resume.FullName</h5>
+                                    <span class="badge bg-light text-success border border-success small">
+                                        @item.Status.ToString()
+                                    </span>
+                                </div>
+                            </div>
+                            <a href="mailto:@item.User.Email?subject=Предложение сотрудничества" 
+                               class="btn btn-sm btn-success rounded-pill px-3">
+                                <i class="bi bi-envelope-fill me-1"></i> Связаться
+                            </a>
+                        </div>
+
+                            <div class="mb-3">
+                                <small class="text-muted d-block fst-italic">Подходящая вакансия::</small>
+                                @if (item.Vacancy != null)
+                                {
+                                    <a asp-controller="Vacancy" 
+                                       asp-action="Details" 
+                                       asp-route-id="@item.VacancyId" 
+                                       class="fw-medium text-dark text-decoration-underline-hover">
+                                        @item.Vacancy.Title
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Информации о вакансии нет</span>
+                                }
+                            </div>
+
+                        @if (!string.IsNullOrEmpty(item.RecruiterNotes))
+                        {
+                            <div class="p-3 bg-light rounded shadow-sm border-start border-3 border-primary">
+                                <h6 class="small fw-bold text-primary mb-1">Рекомендация рекрутера:</h6>
+                                <p class="small mb-0 text-dark fst-italic">@item.RecruiterNotes</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="small text-muted fst-italic">Рекрутер подтвердил квалификацию кандидата без дополнительных комментариев.</p>
+                        }
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pb-3">
+                        <a asp-controller="Resume" asp-action="Details" asp-route-id="@item.ResumeId" 
+                           class="btn btn-sm btn-link text-decoration-none p-0">
+                            Посмотреть полное резюме <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .avatar-verified {
+        width: 48px; height: 48px;
+        background: linear-gradient(135deg, #198754 0%, #20c997 100%);
+        color: white; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: bold; font-size: 1.2rem;
+    }
+    .card { transition: transform 0.2s; }
+    .card:hover { transform: translateY(-3px); }
+</style>

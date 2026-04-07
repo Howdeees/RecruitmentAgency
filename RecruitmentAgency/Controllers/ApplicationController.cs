@@ -31,9 +31,9 @@ public class ApplicationController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Employer,Admin")]
+    [Authorize(Roles = "Admin,Recruiter,Employer")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateStatus(int applicationId, ApplicationStatus newStatus)
+    public async Task<IActionResult> UpdateStatus(int applicationId, RecruitmentAgency.Models.ApplicationStatus status, string? note, int? currentVacancyId)
     {
         var application = await _context.Applications
             .Include(a => a.Vacancy)
@@ -41,16 +41,26 @@ public class ApplicationController : Controller
 
         if (application == null) return NotFound();
 
+        // Проверка прав доступа
         var userId = _userManager.GetUserId(User);
-        if (application.Vacancy.EmployerId != userId && !User.IsInRole("Admin"))
+        bool isStaff = User.IsInRole("Admin") || User.IsInRole("Recruiter");
+        bool isOwner = application.Vacancy.EmployerId == userId;
+
+        if (!isStaff && !isOwner)
         {
             return Forbid();
         }
 
-        application.Status = newStatus;
+        // Обновляем статус
+        application.Status = status;
+
+        // Обновляем заметку (даже если она пустая)
+        application.RecruiterNotes = note;
+
         await _context.SaveChangesAsync();
 
-        return RedirectToAction(nameof(Incoming), new { vacancyId = application.VacancyId });
+        // Перенаправляем обратно на ту же страницу, сохраняя выбранный фильтр вакансии
+        return RedirectToAction(nameof(Incoming), new { vacancyId = currentVacancyId });
     }
 
     [HttpGet]
@@ -112,24 +122,34 @@ public class ApplicationController : Controller
         return View(application);
     }
 
-    [Authorize(Roles = "Employer,Admin")]
+    [Authorize(Roles = "Employer,Admin,Recruiter")]
     public async Task<IActionResult> Incoming(int? vacancyId)
     {
         var userId = _userManager.GetUserId(User);
+        bool isStaff = User.IsInRole("Admin") || User.IsInRole("Recruiter");
 
-        var myVacancies = await _context.Vacancies
-            .Where(v => v.EmployerId == userId || User.IsInRole("Admin"))
-            .ToListAsync();
+        var vacancyQuery = _context.Vacancies.AsQueryable();
 
-        ViewBag.Vacancies = myVacancies;
+        if (!isStaff)
+        {
+            vacancyQuery = vacancyQuery.Where(v => v.EmployerId == userId);
+        }
+
+        ViewBag.Vacancies = await vacancyQuery.ToListAsync();
         ViewBag.SelectedVacancyId = vacancyId;
+
 
         var query = _context.Applications
             .Include(a => a.Vacancy)
             .Include(a => a.User)
             .Include(a => a.Resume)
-            .Where(a => a.Vacancy.EmployerId == userId || User.IsInRole("Admin"))
             .AsQueryable();
+
+
+        if (!isStaff)
+        {
+            query = query.Where(a => a.Vacancy.EmployerId == userId);
+        }
 
         if (vacancyId.HasValue)
         {
@@ -138,5 +158,54 @@ public class ApplicationController : Controller
 
         var applications = await query.OrderByDescending(a => a.AppliedDate).ToListAsync();
         return View(applications);
+    }
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Cancel(int id)
+    {
+        var userId = _userManager.GetUserId(User);
+
+        var application = await _context.Applications
+            .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
+
+        if (application == null)
+        {
+            TempData["ErrorMessage"] = "Отклик не найден.";
+            return RedirectToAction("MyApplications");
+        }
+
+        _context.Applications.Remove(application);
+        await _context.SaveChangesAsync();
+
+        TempData["Info"] = "Отклик успешно отозван.";
+        return RedirectToAction("MyApplications");
+    }
+    [HttpPost]
+    [Authorize(Roles = "Employer,Recruiter,Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateNote(int applicationId, string note, int? vacancyId)
+    {
+        var application = await _context.Applications
+            .Include(a => a.Vacancy)
+            .FirstOrDefaultAsync(a => a.Id == applicationId);
+
+        if (application == null) return NotFound();
+
+        var userId = _userManager.GetUserId(User);
+        if (User.IsInRole("Employer") && !User.IsInRole("Admin") && !User.IsInRole("Recruiter"))
+        {
+            if (application.Vacancy.EmployerId != userId)
+            {
+                return Forbid();
+            }
+        }
+
+        application.RecruiterNotes = note;
+        await _context.SaveChangesAsync();
+
+        TempData["Info"] = "Комментарий обновлен";
+
+        return RedirectToAction(nameof(Incoming), new { vacancyId = vacancyId });
     }
 }
