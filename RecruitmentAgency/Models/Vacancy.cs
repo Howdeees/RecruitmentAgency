@@ -18,10 +18,8 @@ namespace RecruitmentAgency.Models
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
-        // Отключаем валидацию для этих полей, так как мы заполняем их сами в контроллере
-        [ValidateNever]
         public string EmployerId { get; set; }
-        [ValidateNever]
         public IdentityUser Employer { get; set; }
+        public virtual ICollection<Application> Applications { get; set; } = new List<Application>();
     }
 }

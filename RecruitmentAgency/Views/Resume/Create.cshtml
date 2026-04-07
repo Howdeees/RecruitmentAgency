@@ -1,66 +1,57 @@
-﻿@model Resume
+﻿@model RecruitmentAgency.Models.Resume
 
-@{
-    Layout = null;
-}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0">
+                <div class="card-body p-4">
+                    @* Исправленная логика заголовка *@
+                    <h2 class="mb-4">@(Model == null || Model.Id == 0 ? "Новое резюме" : "Редактирование резюме")</h2>
+                    
+                    @* КРИТИЧНО: Добавлен method="post" *@
+                    <form asp-action="@(Model == null || Model.Id == 0 ? "Create" : "Edit")" method="post">
+                        
+                        @* Вывод всех ошибок валидации (поможет увидеть, если что-то не так с UserId) *@
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-<!DOCTYPE html>
+                        @if (Model != null && Model.Id != 0)
+                        {
+                            <input type="hidden" asp-for="Id" />
+                        }
 
-<html>
-<head>
-    <meta name="viewport" content="width=device-width" />
-    <title>Create</title>
-</head>
-<body>
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label fw-bold">Желаемая должность</label>
+                            <input asp-for="Title" class="form-control" placeholder="Напр: Middle .NET Developer" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
 
-<h4>Resume</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="FullName" class="control-label"></label>
-                <input asp-for="FullName" class="form-control" />
-                <span asp-validation-for="FullName" class="text-danger"></span>
+                        <div class="mb-3">
+                            <label asp-for="Skills" class="form-label fw-bold">Навыки</label>
+                            <textarea asp-for="Skills" class="form-control" rows="2" placeholder="C#, ASP.NET Core, SQL..."></textarea>
+                            <span asp-validation-for="Skills" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Experience" class="form-label fw-bold">Опыт работы</label>
+                            <textarea asp-for="Experience" class="form-control" rows="5"></textarea>
+                            <span asp-validation-for="Experience" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Education" class="form-label fw-bold">Образование</label>
+                            <input asp-for="Education" class="form-control" />
+                            <span asp-validation-for="Education" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-lg"></i> Сохранить
+                            </button>
+                            <a asp-action="Index" class="btn btn-light border">Отмена</a>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Skills" class="control-label"></label>
-                <input asp-for="Skills" class="form-control" />
-                <span asp-validation-for="Skills" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Experience" class="control-label"></label>
-                <input asp-for="Experience" class="form-control" />
-                <span asp-validation-for="Experience" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Education" class="control-label"></label>
-                <input asp-for="Education" class="form-control" />
-                <span asp-validation-for="Education" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="DesiredSalary" class="control-label"></label>
-                <input asp-for="DesiredSalary" class="form-control" />
-                <span asp-validation-for="DesiredSalary" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="UserId" class="control-label"></label>
-                <select asp-for="UserId" class ="form-control" asp-items="ViewBag.UserId"></select>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
-</body>
-</html>

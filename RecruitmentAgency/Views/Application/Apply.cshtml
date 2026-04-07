@@ -1,0 +1,52 @@
+﻿@model RecruitmentAgency.Models.Application
+
+@{
+    ViewData["Title"] = "Отклик на вакансию";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Отклик на вакансию: @ViewBag.VacancyTitle</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Apply" method="post">
+                        @* Выводим ошибки, если пользователь уже откликался или форма неверна *@
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                        <input type="hidden" asp-for="VacancyId" />
+
+                        <div class="mb-3">
+                            <label asp-for="ResumeId" class="form-label fw-bold">Выберите ваше резюме</label>
+                            <select asp-for="ResumeId" class="form-select"
+                                    asp-items="@(new SelectList(ViewBag.Resumes, "Id", "Title"))">
+                                <option value="">-- Выберите из списка --</option>
+                            </select>
+                            <span asp-validation-for="ResumeId" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="CoverLetter" class="form-label fw-bold">Сопроводительное письмо</label>
+                            <textarea asp-for="CoverLetter" class="form-control" rows="5"
+                                      placeholder="Расскажите, почему вы подходите на эту вакансию..."></textarea>
+                            <span asp-validation-for="CoverLetter" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4">Отправить отклик</button>
+                            <a asp-controller="Vacancy" asp-action="Index" class="btn btn-light border">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

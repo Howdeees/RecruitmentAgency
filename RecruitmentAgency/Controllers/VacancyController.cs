@@ -55,7 +55,19 @@ namespace RecruitmentAgency.Controllers
             var result = await vacanciesQuery.OrderByDescending(v => v.CreatedDate).ToListAsync();
             return View(result);
         }
+        [Authorize(Roles = "Employer,Admin")]
+        public async Task<IActionResult> MyVacancies()
+        {
+            var userId = _userManager.GetUserId(User);
 
+            var myVacancies = await _context.Vacancies
+                .Where(v => v.EmployerId == userId)
+                .Include(v => v.Applications)
+                .OrderByDescending(v => v.CreatedDate)
+                .ToListAsync();
+
+            return View(myVacancies);
+        }
         // ДЕТАЛИ
         [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
