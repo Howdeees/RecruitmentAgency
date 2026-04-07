@@ -1,90 +1,133 @@
-﻿@model StatsViewModel
-<div class="container mt-4">
-    <h2 class="fw-bold mb-4 text-dark"><i class="bi bi-graph-up-arrow me-2"></i>Аналитика системы</h2>
+﻿@model RecruitmentAgency.Models.StatsViewModel
+
+@{
+    ViewData["Title"] = "Аналитика системы";
+}
+
+<div class="container mt-4 pb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark mb-0">
+            <i class="bi bi-graph-up-arrow me-2 text-primary"></i>Аналитика системы
+        </h2>
+        <span class="text-muted small">Данные на @DateTime.Now.ToString("dd.MM.yyyy HH:mm")</span>
+    </div>
 
     <div class="row g-4 mb-5">
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm bg-primary text-white p-3 h-100">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <div class="small text-white-50">Всего вакансий</div>
-                        <h2 class="fw-bold mb-0">@Model.TotalVacancies</h2>
-                    </div>
-                    <i class="bi bi-briefcase fs-1 opacity-50"></i>
+            <div class="card border-0 shadow-sm bg-primary text-white p-3 h-100 position-relative overflow-hidden">
+                <div class="position-relative z-1">
+                    <div class="small text-white-50 text-uppercase fw-bold">Всего вакансий</div>
+                    <h2 class="fw-bold mb-0 mt-1">@Model.TotalVacancies</h2>
                 </div>
+                <i class="bi bi-briefcase position-absolute end-0 bottom-0 mb-n2 me-n2 display-1 opacity-25"></i>
             </div>
         </div>
+
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm bg-success text-white p-3 h-100">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <div class="small text-white-50">Нанято (Accepted)</div>
-                        <h2 class="fw-bold mb-0">@Model.HiredCount</h2>
-                    </div>
-                    <i class="bi bi-person-check fs-1 opacity-50"></i>
+            <div class="card border-0 shadow-sm bg-dark text-white p-3 h-100 position-relative overflow-hidden">
+                <div class="position-relative z-1">
+                    <div class="small text-white-50 text-uppercase fw-bold">Просмотров (всего)</div>
+                    <h2 class="fw-bold mb-0 mt-1">@Model.TotalViews</h2>
                 </div>
+                <i class="bi bi-eye position-absolute end-0 bottom-0 mb-n2 me-n2 display-1 opacity-25"></i>
             </div>
         </div>
+
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm bg-warning text-dark p-3 h-100">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <div class="small text-black-50">Всего откликов</div>
-                        <h2 class="fw-bold mb-0">@Model.TotalApplications</h2>
-                    </div>
-                    <i class="bi bi-people fs-1 opacity-25"></i>
+            <div class="card border-0 shadow-sm bg-success text-white p-3 h-100 position-relative overflow-hidden">
+                <div class="position-relative z-1">
+                    <div class="small text-white-50 text-uppercase fw-bold">Нанято (Accepted)</div>
+                    <h2 class="fw-bold mb-0 mt-1">@Model.HiredCount</h2>
                 </div>
+                <i class="bi bi-person-check position-absolute end-0 bottom-0 mb-n2 me-n2 display-1 opacity-25"></i>
             </div>
         </div>
+
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm bg-info text-white p-3 h-100">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <div class="small text-white-50">Конверсия</div>
-                        <h2 class="fw-bold mb-0">
-                            @(Model.TotalApplications > 0 ? (Model.HiredCount * 100 / Model.TotalApplications) : 0)%
-                        </h2>
-                    </div>
-                    <i class="bi bi-percent fs-1 opacity-50"></i>
+            <div class="card border-0 shadow-sm bg-info text-white p-3 h-100 position-relative overflow-hidden">
+                <div class="position-relative z-1">
+                    <div class="small text-white-50 text-uppercase fw-bold">Конверсия в найм</div>
+                    <h2 class="fw-bold mb-0 mt-1">@Model.ConversionRate%</h2>
                 </div>
+                <i class="bi bi-percent position-absolute end-0 bottom-0 mb-n2 me-n2 display-1 opacity-25"></i>
             </div>
         </div>
     </div>
 
     <div class="row g-4">
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white fw-bold py-3">Воронка откликов</div>
-                <div class="card-body">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 rounded-4">
+                <div class="card-header bg-white fw-bold py-3 border-0">
+                    <i class="bi bi-filter-square me-2 text-muted"></i>СТАТУСЫ ОТКЛИКОВ
+                </div>
+                <div class="card-body pt-0">
                     <ul class="list-group list-group-flush">
-                        @foreach (var status in Model.ApplicationsByStatus)
+                        @if (Model.ApplicationsByStatus.Any())
                         {
-                            <li class="list-group-item d-flex justify-content-between align-items-center ps-0">
-                                <span>@status.Key</span>
-                                <span class="badge bg-secondary rounded-pill">@status.Value</span>
-                            </li>
+                            @foreach (var status in Model.ApplicationsByStatus)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+                                    <span class="text-secondary fw-medium">@status.Key</span>
+                                    <span class="badge bg-light text-dark border rounded-pill px-3">@status.Value</span>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="list-group-item text-center py-4 text-muted small">Нет данных об откликах</li>
                         }
                     </ul>
+                </div>
+                <div class="card-footer bg-light border-0 text-center small py-2">
+                    Всего откликов: <strong>@Model.TotalApplications</strong>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white fw-bold py-3">Топ вакансий по откликам</div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 rounded-4 border-top border-primary border-4">
+                <div class="card-header bg-white fw-bold py-3 border-0">
+                    <i class="bi bi-star me-2 text-primary"></i>ТОП ПО ОТКЛИКАМ
+                </div>
                 <div class="card-body">
-                    @foreach (var v in Model.TopVacancies)
+                    @foreach (var item in Model.TopVacanciesByApps)
                     {
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between mb-1 small">
-                                <span>@v.Title</span>
-                                <span class="fw-bold">@v.Count</span>
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2 small">
+                                <span class="text-truncate fw-medium" style="max-width: 80%;">@item.Key</span>
+                                <span class="fw-bold text-primary">@item.Value</span>
                             </div>
-                            <div class="progress" style="height: 8px;">
-                                @{
-                                    var percent = Model.TotalApplications > 0 ? (v.Count * 100 / Model.TotalApplications) : 0;
+                            <div class="progress" style="height: 8px; border-radius: 10px;">
+                                @{ 
+                                    var appPercent = Model.TotalApplications > 0 ? (item.Value * 100 / Model.TotalApplications) : 0; 
                                 }
-                                <div class="progress-bar bg-primary" style="width: @percent%"></div>
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: @appPercent%"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm h-100 rounded-4 border-top border-dark border-4">
+                <div class="card-header bg-white fw-bold py-3 border-0">
+                    <i class="bi bi-eye me-2 text-dark"></i>ТОП ПО ПРОСМОТРАМ
+                </div>
+                <div class="card-body">
+                    @foreach (var item in Model.TopVacanciesByViews)
+                    {
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2 small">
+                                <span class="text-truncate fw-medium" style="max-width: 80%;">@item.Key</span>
+                                <span class="fw-bold text-dark">@item.Value <i class="bi bi-eye text-muted ms-1 small"></i></span>
+                            </div>
+                            <div class="progress" style="height: 8px; border-radius: 10px;">
+                                @{ 
+                                    var maxViews = Model.TopVacanciesByViews.FirstOrDefault().Value;
+                                    var viewPercent = maxViews > 0 ? (item.Value * 100 / maxViews) : 0; 
+                                }
+                                <div class="progress-bar bg-dark" role="progressbar" style="width: @viewPercent%"></div>
                             </div>
                         </div>
                     }
@@ -93,3 +136,11 @@
         </div>
     </div>
 </div>
+
+<style>
+    body { background-color: #f4f7f6; }
+    .card { transition: all 0.3s ease; }
+    .progress-bar { transition: width 1s ease-in-out; }
+    .list-group-item { border-color: rgba(0,0,0,.05); }
+    .z-1 { z-index: 1; }
+</style>

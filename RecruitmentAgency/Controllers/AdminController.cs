@@ -10,22 +10,38 @@ public class AdminController : Controller
     [Authorize(Roles = "Admin,Recruiter")]
     public async Task<IActionResult> Dashboard()
     {
+        var allVacancies = await _context.Vacancies.ToListAsync();
+        var allApplications = await _context.Applications.Include(a => a.Vacancy).ToListAsync();
+
         var stats = new StatsViewModel
         {
-            TotalVacancies = await _context.Vacancies.CountAsync(),
-            TotalApplications = await _context.Applications.CountAsync(),
-            HiredCount = await _context.Applications.CountAsync(a => a.Status == ApplicationStatus.Accepted),
+            TotalVacancies = allVacancies.Count,
+            TotalApplications = allApplications.Count,
 
-            ApplicationsByStatus = await _context.Applications
-                .GroupBy(a => a.Status)
-                .ToDictionaryAsync(g => g.Key.ToString(), g => g.Count()),
+            // 1. Сравнение через Enum
+            HiredCount = allApplications.Count(a => a.Status == ApplicationStatus.Accepted),
 
-            TopVacancies = await _context.Applications
+            TotalViews = allVacancies.Sum(v => v.ViewsCount),
+
+            // 2. Группировка с приведением к строке
+            ApplicationsByStatus = allApplications
+                .GroupBy(a => a.Status.ToString())
+                .ToDictionary(g => g.Key, g => g.Count()),
+
+            // Топ по откликам
+            TopVacanciesByApps = allApplications
                 .GroupBy(a => a.Vacancy.Title)
                 .OrderByDescending(g => g.Count())
                 .Take(5)
-                .Select(g => new VacancyStats { Title = g.Key, Count = g.Count() })
-                .ToListAsync()
+                .Select(g => new KeyValuePair<string, int>(g.Key, g.Count()))
+                .ToList(),
+
+            // Топ по просмотрам
+            TopVacanciesByViews = allVacancies
+                .OrderByDescending(v => v.ViewsCount)
+                .Take(5)
+                .Select(v => new KeyValuePair<string, int>(v.Title, v.ViewsCount))
+                .ToList()
         };
 
         return View(stats);

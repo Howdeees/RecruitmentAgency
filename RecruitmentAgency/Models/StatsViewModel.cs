@@ -1,21 +1,20 @@
-﻿namespace RecruitmentAgency.Models
+﻿using System.Collections.Generic;
+
+namespace RecruitmentAgency.Models
 {
     public class StatsViewModel
     {
-        // Общие цифры
         public int TotalVacancies { get; set; }
-        public int ActiveVacancies { get; set; }
         public int TotalApplications { get; set; }
-        public int HiredCount { get; set; } // Статус "Accepted"
+        public int HiredCount { get; set; }
+        public int TotalViews { get; set; }
 
-        // Группировки для графиков или списков
-        public Dictionary<string, int> ApplicationsByStatus { get; set; }
-        public List<VacancyStats> TopVacancies { get; set; }
-    }
+        public Dictionary<string, int> ApplicationsByStatus { get; set; } = new();
 
-    public class VacancyStats
-    {
-        public string Title { get; set; }
-        public int Count { get; set; }
+        public List<KeyValuePair<string, int>> TopVacanciesByApps { get; set; } = new();
+
+        public List<KeyValuePair<string, int>> TopVacanciesByViews { get; set; } = new();
+
+        public int ConversionRate => TotalApplications > 0 ? (HiredCount * 100 / TotalApplications) : 0;
     }
 }

@@ -77,7 +77,6 @@ namespace RecruitmentAgency.Controllers
 
             if (vacancy == null) return NotFound();
 
-            // Инкремент просмотров
             vacancy.ViewsCount++;
             _context.Update(vacancy);
             await _context.SaveChangesAsync();
