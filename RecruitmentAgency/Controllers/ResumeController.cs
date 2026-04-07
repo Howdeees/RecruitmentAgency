@@ -18,7 +18,7 @@ namespace RecruitmentAgency.Controllers
             _context = context;
             _userManager = userManager;
         }
-
+       
         public async Task<IActionResult> Index()
         {
             var userId = _userManager.GetUserId(User);
@@ -110,6 +110,34 @@ namespace RecruitmentAgency.Controllers
             }
 
             return View(resume);
+        }
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var resume = await _context.Resumes
+                .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId);
+
+            if (resume == null)
+            {
+                TempData["ErrorMessage"] = "Резюме не найдено или у вас нет прав на его удаление.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var hasApplications = await _context.Applications.AnyAsync(a => a.ResumeId == id);
+            if (hasApplications)
+            {
+                TempData["ErrorMessage"] = "Нельзя удалить резюме, по которому есть активные отклики. Сначала отозовите отклики.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            _context.Resumes.Remove(resume);
+            await _context.SaveChangesAsync();
+
+            TempData["Info"] = "Резюме успешно удалено.";
+            return RedirectToAction(nameof(Index));
         }
     }
 }

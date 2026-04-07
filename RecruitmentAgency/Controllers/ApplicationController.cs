@@ -139,4 +139,26 @@ public class ApplicationController : Controller
         var applications = await query.OrderByDescending(a => a.AppliedDate).ToListAsync();
         return View(applications);
     }
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Cancel(int id)
+    {
+        var userId = _userManager.GetUserId(User);
+
+        var application = await _context.Applications
+            .FirstOrDefaultAsync(a => a.Id == id && a.UserId == userId);
+
+        if (application == null)
+        {
+            TempData["ErrorMessage"] = "Отклик не найден.";
+            return RedirectToAction("MyApplications");
+        }
+
+        _context.Applications.Remove(application);
+        await _context.SaveChangesAsync();
+
+        TempData["Info"] = "Отклик успешно отозван.";
+        return RedirectToAction("MyApplications");
+    }
 }

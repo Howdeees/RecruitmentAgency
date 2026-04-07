@@ -82,23 +82,21 @@
 
                         @if (User.Identity.IsAuthenticated)
                         {
-                            @* Ссылка ТОЛЬКО для соискателей (обычных юзеров) *@
-                            if (!User.IsInRole("Employer") && !User.IsInRole("Admin"))
+                            @if (!User.IsInRole("Employer") && !User.IsInRole("Admin") && !User.IsInRole("Recruiter"))
                             {
-                                <li class="nav-item">
-                                    <a class="nav-link text-white" asp-controller="Application" asp-action="MyApplications">
-                                        <i class="bi bi-send-check me-1"></i> Мои отклики
-                                    </a>
-                                </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-white" asp-controller="Resume" asp-action="Index">
                                         <i class="bi bi-file-person me-1"></i> Мои резюме
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Application" asp-action="MyApplications">
+                                        <i class="bi bi-send-check me-1"></i> Мои отклики
+                                    </a>
+                                </li>
                             }
 
-                            @* Ссылки для Работодателя и Админа и Рекрутера *@
-                            if (User.IsInRole("Employer") || User.IsInRole("Admin") || User.IsInRole("Recruiter"))
+                            @if (User.IsInRole("Employer"))
                             {
                                 <li class="nav-item">
                                     <a class="nav-link text-white" asp-controller="Vacancy" asp-action="MyVacancies">
@@ -109,6 +107,51 @@
                                     <a class="nav-link text-white" asp-controller="Application" asp-action="Incoming">
                                         <i class="bi bi-people me-1"></i> Входящие отклики
                                     </a>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("Recruiter"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-controller="Resume" asp-action="AllResumes">
+                                        <i class="bi bi-search me-1"></i> База кандидатов
+                                    </a>
+                                </li>
+
+                                @if (!User.IsInRole("Admin"))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link text-white" asp-controller="Application" asp-action="Incoming">
+                                            <i class="bi bi-clipboard-check me-1"></i> Все отклики
+                                        </a>
+                                    </li>
+                                }
+                            }
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-warning fw-bold" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-gear-fill me-1"></i> Админ-панель
+                                    </a>
+                                    <ul class="dropdown-menu shadow border-0" aria-labelledby="adminDropdown">
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Admin" asp-action="Users">
+                                                <i class="bi bi-people me-2"></i> Пользователи
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Application" asp-action="Incoming">
+                                                <i class="bi bi-envelope-paper me-2"></i> Все отклики (Глобально)
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item" asp-controller="Vacancy" asp-action="Index">
+                                                <i class="bi bi-list-ul me-2"></i> Модерация вакансий
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </li>
                             }
                         }

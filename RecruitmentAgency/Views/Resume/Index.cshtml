@@ -32,6 +32,12 @@
                             <div class="d-flex gap-2">
                                 <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-outline-secondary btn-sm">Редактировать</a>
                                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">Просмотр</a>
+                                <form asp-action="Delete" asp-route-id="@item.Id" method="post"
+                                      onsubmit="return confirm('Вы уверены, что хотите навсегда удалить это резюме?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash me-1"></i> Удалить
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>

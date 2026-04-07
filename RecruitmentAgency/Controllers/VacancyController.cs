@@ -20,7 +20,6 @@ namespace RecruitmentAgency.Controllers
             _userManager = userManager;
         }
 
-        // СПИСОК ВАКАНСИЙ
         [AllowAnonymous]
         public async Task<IActionResult> Index(string searchString, string schedule, decimal? minSalary)
         {
@@ -68,7 +67,6 @@ namespace RecruitmentAgency.Controllers
 
             return View(myVacancies);
         }
-        // ДЕТАЛИ
         [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
@@ -81,7 +79,6 @@ namespace RecruitmentAgency.Controllers
             return View(vacancy);
         }
 
-        // СОЗДАНИЕ
         [Authorize(Roles = "Employer,Admin")]
         public IActionResult Create()
         {
@@ -89,24 +86,24 @@ namespace RecruitmentAgency.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Employer,Admin")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Vacancy vacancy)
         {
+            vacancy.EmployerId = _userManager.GetUserId(User);
+
+            ModelState.Remove("Employer");
+            ModelState.Remove("EmployerId");
+
             if (ModelState.IsValid)
             {
-                var user = await _userManager.GetUserAsync(User);
-                if (user == null) return Challenge();
-
-                vacancy.EmployerId = user.Id;
                 _context.Add(vacancy);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(vacancy);
         }
 
-        // РЕДАКТИРОВАНИЕ 
         [Authorize(Roles = "Employer,Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -164,24 +161,34 @@ namespace RecruitmentAgency.Controllers
             return View(vacancy);
         }
 
-        // УДАЛЕНИЕ
+        [HttpPost]
         [Authorize(Roles = "Employer,Admin")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
+            var currentUserId = _userManager.GetUserId(User);
+
             var vacancy = await _context.Vacancies.FindAsync(id);
-            if (vacancy == null) return NotFound();
 
-            var userId = _userManager.GetUserId(User);
-
-            if (!User.IsInRole("Admin") && vacancy.EmployerId != userId)
+            if (vacancy == null)
             {
-                return Forbid();
+                return NotFound();
             }
+
+            if (!User.IsInRole("Admin") && vacancy.EmployerId != currentUserId)
+            {
+                TempData["ErrorMessage"] = "Ошибка доступа: вы можете удалять только свои вакансии.";
+                return RedirectToAction(nameof(MyVacancies));
+            }
+
+            var relatedApplications = _context.Applications.Where(a => a.VacancyId == id);
+            _context.Applications.RemoveRange(relatedApplications);
 
             _context.Vacancies.Remove(vacancy);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index));
+            TempData["Info"] = "Вакансия успешно удалена.";
+            return RedirectToAction(nameof(MyVacancies));
         }
     }
 }

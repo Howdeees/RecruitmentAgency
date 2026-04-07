@@ -78,12 +78,21 @@
                                         @statusName
                                     </span>
                                 </td>
-                                <td class="pe-4 text-end">
-                                    <a asp-controller="Vacancy" asp-action="Details" asp-route-id="@item.VacancyId" 
-                                       class="btn btn-sm btn-outline-secondary rounded-pill">
-                                        <i class="bi bi-eye me-1"></i> О вакансии
-                                    </a>
-                                </td>
+                               <td class="pe-4 text-end">
+    <div class="d-flex justify-content-end gap-2">
+        <a asp-controller="Vacancy" asp-action="Details" asp-route-id="@item.VacancyId" 
+           class="btn btn-sm btn-outline-primary rounded-pill">
+            <i class="bi bi-eye"></i>
+        </a>
+        
+        <form asp-controller="Application" asp-action="Cancel" asp-route-id="@item.Id" method="post" 
+              onsubmit="return confirm('Вы уверены, что хотите отозвать свой отклик на эту вакансию?');">
+            <button type="submit" class="btn btn-sm btn-danger rounded-pill shadow-sm">
+                <i class="bi bi-x-circle me-1"></i> Отозвать
+            </button>
+        </form>
+    </div>
+</td>
                             </tr>
                         }
                     </tbody>

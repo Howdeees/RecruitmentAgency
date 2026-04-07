@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Поиск вакансий";
-    bool canManage = User.IsInRole("Employer") || User.IsInRole("Admin");
+    bool canManage = User.IsInRole("Admin");
 }
 
 <div class="mt-4 mb-5">
