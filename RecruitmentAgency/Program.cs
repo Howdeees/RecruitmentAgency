@@ -38,5 +38,22 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.MapRazorPages();
+using (var scope = app.Services.CreateScope())
+{
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
+    string email = "david.aloyan.00@mail.ru";
+    var user = await userManager.FindByEmailAsync(email);
+
+    if (user != null)
+    {
+        if (!await roleManager.RoleExistsAsync("Employer"))
+        {
+            await roleManager.CreateAsync(new IdentityRole("Employer"));
+        }
+
+        await userManager.AddToRoleAsync(user, "Employer");
+    }
+}
 app.Run();

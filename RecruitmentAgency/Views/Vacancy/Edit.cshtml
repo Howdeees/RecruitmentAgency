@@ -1,59 +1,67 @@
-﻿@model Vacancy
+﻿@model RecruitmentAgency.Models.Vacancy
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Редактирование";
 }
 
-<h1>Edit</h1>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-center mb-4">Редактирование вакансии</h2>
+                    
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="Id" />
+                        @* Скрытые поля, чтобы не потерять данные при сохранении *@
+                        <input type="hidden" asp-for="EmployerId" />
+                        <input type="hidden" asp-for="CreatedDate" />
 
-<h4>Vacancy</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
+                        <div class="form-group mb-3">
+                            <label asp-for="Title" class="form-label fw-bold">Название вакансии</label>
+                            <input asp-for="Title" class="form-control" placeholder="Напр. Senior .NET Developer" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Salary" class="form-label fw-bold">Зарплата (руб.)</label>
+                                <input asp-for="Salary" class="form-control" type="number" />
+                                <span asp-validation-for="Salary" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Schedule" class="form-label fw-bold">График</label>
+                                <input asp-for="Schedule" class="form-control" placeholder="5/2, Удаленно" />
+                                <span asp-validation-for="Schedule" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Description" class="form-label fw-bold">Описание</label>
+                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label asp-for="Requirements" class="form-label fw-bold">Требования</label>
+                            <textarea asp-for="Requirements" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Requirements" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a asp-action="Index" class="btn btn-light border">Отмена</a>
+                            <button type="submit" class="btn btn-primary px-4">Сохранить изменения</button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Requirements" class="control-label"></label>
-                <input asp-for="Requirements" class="form-control" />
-                <span asp-validation-for="Requirements" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Salary" class="control-label"></label>
-                <input asp-for="Salary" class="form-control" />
-                <span asp-validation-for="Salary" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CreatedDate" class="control-label"></label>
-                <input asp-for="CreatedDate" class="form-control" />
-                <span asp-validation-for="CreatedDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="EmployerId" class="control-label"></label>
-                <select asp-for="EmployerId" class="form-control" asp-items="ViewBag.EmployerId"></select>
-                <span asp-validation-for="EmployerId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

@@ -36,17 +36,21 @@ namespace RecruitmentAgency.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Employer")]
+
         public async Task<IActionResult> Create(Vacancy vacancy)
         {
             if (ModelState.IsValid)
             {
                 var user = await _userManager.GetUserAsync(User);
 
-                vacancy.EmployerId = user.Id;
-                vacancy.CreatedDate = DateTime.Now;
+                if (user == null)
+                {
+                    return RedirectToAction("Login");
+                }
 
-                _context.Add(vacancy);
+                vacancy.EmployerId = user.Id;
+
+                _context.Vacancies.Add(vacancy);
                 await _context.SaveChangesAsync();
 
                 return RedirectToAction(nameof(Index));

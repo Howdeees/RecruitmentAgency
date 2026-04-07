@@ -1,0 +1,26 @@
+﻿@model IEnumerable<RecruitmentAgency.Models.Resume>
+
+<h2>Резюме</h2>
+
+<a href="/Resume/Create">Создать резюме</a>
+
+<table>
+    <tr>
+        <th>Имя</th>
+        <th>Навыки</th>
+        <th>Зарплата</th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.FullName</td>
+            <td>@item.Skills</td>
+            <td>@item.DesiredSalary</td>
+            <td>
+                <a href="/Resume/Details/@item.Id">Подробнее</a>
+            </td>
+        </tr>
+    }
+</table>

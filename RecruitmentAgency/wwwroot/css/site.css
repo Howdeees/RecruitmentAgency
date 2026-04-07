@@ -1,31 +1,81 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
+/* ===== ОСНОВА ===== */
 body {
-  margin-bottom: 60px;
+    background-color: #f5f6f8;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+/* ===== ЗАГОЛОВКИ ===== */
+h1, h2, h3 {
+    font-weight: 600;
+    margin-bottom: 20px;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+/* ===== NAVBAR ===== */
+.navbar {
+    padding: 12px 0;
+}
+
+    .navbar .navbar-brand {
+        font-size: 20px;
+    }
+
+    .navbar .nav-link {
+        color: white !important;
+        font-weight: 500;
+        transition: 0.2s;
+    }
+
+        .navbar .nav-link:hover {
+            color: #0d6efd !important;
+        }
+
+/* ===== КОНТЕЙНЕР ===== */
+.container {
+    max-width: 1100px;
+}
+
+/* ===== КНОПКИ ===== */
+.btn {
+    border-radius: 8px;
+    padding: 6px 14px;
+}
+
+/* ===== ТАБЛИЦЫ ===== */
+table {
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table {
+    margin-top: 10px;
+}
+
+    .table th {
+        background-color: #f1f3f5;
+    }
+
+/* ===== ФОРМЫ ===== */
+input, textarea, select {
+    border-radius: 8px !important;
+}
+
+.form-control {
+    margin-bottom: 10px;
+}
+
+/* ===== КАРТОЧКИ (на будущее) ===== */
+.card {
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* ===== ФУТЕР ===== */
+footer {
+    font-size: 14px;
+}
+
+/* ===== ОТСТУПЫ ===== */
+.mt-4 {
+    margin-top: 30px !important;
 }
