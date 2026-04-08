@@ -25,7 +25,6 @@
     <div class="row g-3">
         @foreach (var item in Model)
         {
-            // Проверяем статус рекомендации
             bool isRecommended = item.Applications?.Any(a => a.Status == RecruitmentAgency.Models.ApplicationStatus.Recommended) ?? false;
 
             <div class="col-12">

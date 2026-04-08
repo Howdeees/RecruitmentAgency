@@ -86,9 +86,12 @@
                                     
                                     @if (User.Identity.IsAuthenticated)
                                     {
-                                        <button class="btn btn-success w-100 py-3 fw-bold mb-3 rounded-3 shadow-sm">
-                                            Отправить резюме
-                                        </button>
+                                        <a asp-controller="Application"
+                                   asp-action="Apply"
+                                   asp-route-vacancyId="@Model.Id"
+                                   class="btn btn-primary btn-lg shadow-sm">
+                                <i class="bi bi-send-plus me-2"></i> Откликнуться на вакансию
+                            </a>
                                     }
                                     else
                                     {
@@ -102,7 +105,6 @@
                                     </div>
                                 </div>
 
-                                @* Кнопки управления для автора или админа *@
                                 @if (User.IsInRole("Admin") || (User.Identity.IsAuthenticated && Model.EmployerId == User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value))
                                 {
                                     <div class="mt-3 d-grid gap-2">

@@ -13,7 +13,6 @@
                 </div>
                 <div class="card-body p-4">
                     <form asp-action="Apply" method="post">
-                        @* Выводим ошибки, если пользователь уже откликался или форма неверна *@
                         <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
                         <input type="hidden" asp-for="VacancyId" />

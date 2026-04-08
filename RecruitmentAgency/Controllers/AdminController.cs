@@ -18,17 +18,14 @@ public class AdminController : Controller
             TotalVacancies = allVacancies.Count,
             TotalApplications = allApplications.Count,
 
-            // 1. Сравнение через Enum
             HiredCount = allApplications.Count(a => a.Status == ApplicationStatus.Accepted),
 
             TotalViews = allVacancies.Sum(v => v.ViewsCount),
 
-            // 2. Группировка с приведением к строке
             ApplicationsByStatus = allApplications
                 .GroupBy(a => a.Status.ToString())
                 .ToDictionary(g => g.Key, g => g.Count()),
 
-            // Топ по откликам
             TopVacanciesByApps = allApplications
                 .GroupBy(a => a.Vacancy.Title)
                 .OrderByDescending(g => g.Count())
@@ -36,7 +33,6 @@ public class AdminController : Controller
                 .Select(g => new KeyValuePair<string, int>(g.Key, g.Count()))
                 .ToList(),
 
-            // Топ по просмотрам
             TopVacanciesByViews = allVacancies
                 .OrderByDescending(v => v.ViewsCount)
                 .Take(5)
