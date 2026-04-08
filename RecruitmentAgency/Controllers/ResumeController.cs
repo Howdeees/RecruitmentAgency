@@ -98,18 +98,15 @@ namespace RecruitmentAgency.Controllers
             {
                 try
                 {
-                    // Находим оригинальную запись в базе без отслеживания (AsNoTracking), 
-                    // чтобы подтянуть старое имя фото и UserId
                     var existingResume = await _context.Resumes.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
 
                     if (existingResume == null) return NotFound();
 
-                    resume.UserId = existingResume.UserId; // Сохраняем владельца
+                    resume.UserId = existingResume.UserId;
                     resume.UpdatedDate = DateTime.Now;
 
                     if (imageFile != null && imageFile.Length > 0)
                     {
-                        // Логика загрузки нового фото
                         var fileName = Guid.NewGuid().ToString() + Path.GetExtension(imageFile.FileName);
                         var uploadDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/avatars");
                         if (!Directory.Exists(uploadDir)) Directory.CreateDirectory(uploadDir);
@@ -120,7 +117,6 @@ namespace RecruitmentAgency.Controllers
                             await imageFile.CopyToAsync(stream);
                         }
 
-                        // Удаляем старый файл с диска, если он был
                         if (!string.IsNullOrEmpty(existingResume.ProfilePicture))
                         {
                             var oldPath = Path.Combine(uploadDir, existingResume.ProfilePicture);
@@ -131,7 +127,6 @@ namespace RecruitmentAgency.Controllers
                     }
                     else
                     {
-                        // Если файл не выбран, оставляем старое имя фото
                         resume.ProfilePicture = existingResume.ProfilePicture;
                     }
 

@@ -41,7 +41,6 @@ public class ApplicationController : Controller
 
         if (application == null) return NotFound();
 
-        // Проверка прав доступа
         var userId = _userManager.GetUserId(User);
         bool isStaff = User.IsInRole("Admin") || User.IsInRole("Recruiter");
         bool isOwner = application.Vacancy.EmployerId == userId;
@@ -51,15 +50,12 @@ public class ApplicationController : Controller
             return Forbid();
         }
 
-        // Обновляем статус
         application.Status = status;
 
-        // Обновляем заметку (даже если она пустая)
         application.RecruiterNotes = note;
 
         await _context.SaveChangesAsync();
 
-        // Перенаправляем обратно на ту же страницу, сохраняя выбранный фильтр вакансии
         return RedirectToAction(nameof(Incoming), new { vacancyId = currentVacancyId });
     }
 

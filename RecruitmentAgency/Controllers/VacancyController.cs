@@ -7,7 +7,7 @@ using RecruitmentAgency.Models;
 
 namespace RecruitmentAgency.Controllers
 {
-    [Authorize] // По умолчанию всё закрыто
+    [Authorize]
     public class VacancyController : Controller
     {
         private readonly ApplicationDbContext _context;

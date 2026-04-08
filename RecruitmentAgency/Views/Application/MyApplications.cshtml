@@ -49,7 +49,6 @@
                                 <td class="ps-4">
                                     @if (item.Vacancy != null)
                                     {
-                                        @* ССЫЛКА НА ВАКАНСИЮ *@
                                         <a asp-controller="Vacancy" asp-action="Details" asp-route-id="@item.VacancyId" 
                                            class="text-decoration-none fw-bold text-primary hover-underline">
                                             <i class="bi bi-briefcase me-1"></i> @item.Vacancy.Title

@@ -35,7 +35,6 @@
         <div class="row g-4">
             @foreach (var item in Model)
             {
-                // Проверяем, рекомендовано ли это резюме (нужен .Include(r => r.Applications) в контроллере)
                 bool isRecommended = item.Applications?.Any(a => a.Status == RecruitmentAgency.Models.ApplicationStatus.Recommended) ?? false;
 
                 <div class="col-md-6 col-lg-4">
