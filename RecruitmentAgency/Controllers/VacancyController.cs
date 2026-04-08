@@ -99,7 +99,6 @@ namespace RecruitmentAgency.Controllers
 
             if (ModelState.IsValid)
             {
-                // Привязываем вакансию к текущему пользователю
                 vacancy.EmployerId = _userManager.GetUserId(User);
 
                 if (imageFile != null && imageFile.Length > 0)
@@ -163,14 +162,12 @@ namespace RecruitmentAgency.Controllers
                     var existingVacancy = await _context.Vacancies.AsNoTracking().FirstOrDefaultAsync(v => v.Id == id);
                     if (existingVacancy == null) return NotFound();
 
-                    // Проверка прав (защита от подмены ID в браузере)
                     var userId = _userManager.GetUserId(User);
                     if (!User.IsInRole("Admin") && existingVacancy.EmployerId != userId)
                     {
                         return Forbid();
                     }
 
-                    // Сохраняем системные данные
                     vacancy.EmployerId = existingVacancy.EmployerId;
                     vacancy.CreatedDate = existingVacancy.CreatedDate;
                     vacancy.ViewsCount = existingVacancy.ViewsCount;
@@ -230,11 +227,9 @@ namespace RecruitmentAgency.Controllers
                 return RedirectToAction(nameof(MyVacancies));
             }
 
-            // Удаляем связанные отклики, чтобы не было ошибки внешнего ключа
             var relatedApplications = _context.Applications.Where(a => a.VacancyId == id);
             _context.Applications.RemoveRange(relatedApplications);
 
-            // Удаляем файл с диска
             if (!string.IsNullOrEmpty(vacancy.ImagePath))
             {
                 var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/vacancies", vacancy.ImagePath);
